@@ -1,0 +1,140 @@
+{
+  "contractVersion": "1.0.0",
+  "host": "pi",
+  "kind": "fixture",
+  "live": false,
+  "notes": "Bounded normalized contract observations for HTP and SEOsmith. Fixture-level expectations only; not proof of a live adapter or deployed backend. Canonical source is HTP #34 (t11); this is the Pi host projection and must be reconciled with the canonical file.",
+  "statusEnum": ["ok", "denied", "unauthorized", "unavailable", "partial", "invalid", "error"],
+  "requiredScenarios": [
+    "htp.saved_reads.no_collection",
+    "htp.disconnected.saved_history",
+    "htp.auth.expired",
+    "htp.cross_website.denied",
+    "htp.partial_coverage",
+    "htp.report.collect.idempotent",
+    "htp.missing_capability",
+    "seosmith.start.bounded",
+    "seosmith.status.states",
+    "seosmith.cancel",
+    "seosmith.report.export",
+    "seosmith.standalone.offline",
+    "seosmith.invalid_scope",
+    "seosmith.missing_binary",
+    "seosmith.worker_outage",
+    "seosmith.oversized_report"
+  ],
+  "scenarios": [
+    {
+      "id": "htp.saved_reads.no_collection",
+      "operation": "htp.saved_data.read",
+      "context": { "auth": "valid", "website": "www.example.com", "providerState": "connected" },
+      "expected": { "status": "ok", "jobCreated": false, "dataSource": "stored", "coverage": "full" }
+    },
+    {
+      "id": "htp.disconnected.saved_history",
+      "operation": "htp.saved_data.read",
+      "context": { "auth": "valid", "website": "www.example.com", "providerState": "disconnected" },
+      "expected": {
+        "status": "ok",
+        "jobCreated": false,
+        "dataSource": "stored",
+        "coverage": "partial",
+        "providerState": "disconnected"
+      }
+    },
+    {
+      "id": "htp.auth.expired",
+      "operation": "htp.website.list",
+      "context": { "auth": "expired", "surface": "list_websites" },
+      "expected": { "status": "unauthorized", "jobCreated": false, "reauthRequired": true }
+    },
+    {
+      "id": "htp.cross_website.denied",
+      "operation": "htp.saved_data.read",
+      "context": { "auth": "valid", "website": "www.other-account.com" },
+      "expected": { "status": "denied", "jobCreated": false }
+    },
+    {
+      "id": "htp.partial_coverage",
+      "operation": "htp.saved_data.read",
+      "context": { "auth": "valid", "website": "www.example.com", "providerState": "connected", "window": "partial" },
+      "expected": { "status": "partial", "jobCreated": false, "dataSource": "stored", "coverage": "partial" }
+    },
+    {
+      "id": "htp.report.collect.idempotent",
+      "operation": "htp.report.collect",
+      "context": { "auth": "valid", "website": "www.example.com", "requestId": "req-1", "retry": true },
+      "expected": { "status": "ok", "durableRequestId": true, "idempotent": true }
+    },
+    {
+      "id": "htp.missing_capability",
+      "operation": "htp.search.inspection.read",
+      "context": { "auth": "valid", "backendVersion": "pre-htp#10" },
+      "expected": { "status": "unavailable", "jobCreated": false, "capability": "htp#10" }
+    },
+    {
+      "id": "htp.missing_tool",
+      "operation": "htp.saved_data.read",
+      "context": { "tool": "missing", "discovered": false },
+      "expected": { "status": "unavailable", "errorClass": "missing_tool", "jobCreated": false }
+    },
+    {
+      "id": "seosmith.start.bounded",
+      "operation": "seosmith.audit.start",
+      "context": { "scope": { "pages": 10, "resources": 100, "timeSeconds": 60 }, "requestId": "run-1" },
+      "expected": { "status": "ok", "bounded": true, "runId": "run-1", "htpContacted": false }
+    },
+    {
+      "id": "seosmith.status.states",
+      "operation": "seosmith.audit.status",
+      "context": { "runId": "run-1", "worker": "reachable" },
+      "expected": {
+        "status": "ok",
+        "runStates": ["queued", "running", "completed", "failed", "cancelled"],
+        "preservesPartial": true
+      }
+    },
+    {
+      "id": "seosmith.cancel",
+      "operation": "seosmith.audit.cancel",
+      "context": { "runId": "run-1", "runState": "running" },
+      "expected": { "status": "ok", "cancelled": true, "durable": true }
+    },
+    {
+      "id": "seosmith.report.export",
+      "operation": "seosmith.report.export",
+      "context": { "runId": "run-1", "format": "json" },
+      "expected": { "status": "ok", "format": "json", "versions": true, "coverage": true }
+    },
+    {
+      "id": "seosmith.standalone.offline",
+      "operation": "seosmith.standalone.audit",
+      "context": { "htpAvailable": false, "scope": { "pages": 5 } },
+      "expected": { "status": "ok", "htpContacted": false, "mode": "standalone" }
+    },
+    {
+      "id": "seosmith.invalid_scope",
+      "operation": "seosmith.audit.start",
+      "context": { "scope": { "pages": 0 } },
+      "expected": { "status": "invalid", "started": false, "errorClass": "invalid_scope" }
+    },
+    {
+      "id": "seosmith.missing_binary",
+      "operation": "seosmith.audit.start",
+      "context": { "binaryPresent": false },
+      "expected": { "status": "unavailable", "started": false, "errorClass": "missing_binary" }
+    },
+    {
+      "id": "seosmith.worker_outage",
+      "operation": "seosmith.audit.status",
+      "context": { "worker": "unreachable" },
+      "expected": { "status": "unavailable", "runState": "unknown", "preservesPartial": true, "errorClass": "worker_outage" }
+    },
+    {
+      "id": "seosmith.oversized_report",
+      "operation": "seosmith.report.export",
+      "context": { "runId": "run-1", "reportBytes": 1073741824, "maxBytes": 10485760 },
+      "expected": { "status": "error", "errorClass": "oversized_report", "truncated": false }
+    }
+  ]
+}
