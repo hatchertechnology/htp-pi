@@ -3,12 +3,14 @@
     "worktree": "/mnt/storage/projects/htp-wave0-plugin-contract",
     "repo": "hatchertechnology/htp",
     "branch": "wave0/plugin-contract",
-    "baseCommit": "82999d5",
-    "fileState": "canonical files were uncommitted in the source worktree at pin time; the HTP PR will commit them",
+    "commit": "43375d313b75bf1c7ad89d947d499c30ad515e59",
+    "pullRequest": "https://github.com/hatchertechnology/htp/pull/36",
+    "fileState": "committed in HTP PR #36; hashes verified unchanged from the initial pin",
     "pinnedBy": "t12 pi-plugin-contracts"
   },
   "contractVersion": "1.0.0",
   "pinnedOn": "2026-11-16",
+  "refreshedOn": "2026-11-16",
   "files": [
     {
       "path": "v1/capabilities.json",

@@ -16,7 +16,7 @@ calls a backend, or installs a package.
 | `../vendor/plugin-contract/v1/conformance.json` | pinned canonical | `contractVersion 1.0.0`, 31 normalized scenarios. |
 | `../vendor/plugin-contract/v1/skills.lock.json` | pinned canonical | HTP shared-skill hashes. |
 | `../vendor/plugin-contract/plugin-contract.mjs` | pinned canonical | Shared offline validator (`validateResults`, `validateObservation`). |
-| `../vendor/plugin-contract/PIN.json` | pin record | Source worktree/commit and sha256 of every pinned file. |
+| `../vendor/plugin-contract/PIN.json` | pin record | Source repo/branch, committed head (HTP PR #36) and sha256 of every pinned file. |
 
 ## host.json
 
