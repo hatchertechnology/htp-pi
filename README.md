@@ -18,7 +18,7 @@ package, adapter, or skills. Host issue
   over the 25 canonical HTP and SEOsmith operations; all adapters
   `not-implemented`.
 - [`contract/vendor/plugin-contract/`](contract/vendor/plugin-contract) —
-  **pinned** canonical capabilities, 31 normalized fixtures and the shared
+  **pinned** canonical capabilities, 34 normalized fixtures and the shared
   validator, with sha256 hashes in `PIN.json`.
 - [`scripts/check-contract.mjs`](scripts/check-contract.mjs) — PIN, profile and
   projection validator.

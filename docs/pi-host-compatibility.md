@@ -14,7 +14,7 @@ Companion machine-readable files:
 - [`../contract/v1/operations.json`](../contract/v1/operations.json) — Pi
   projection over the 25 canonical HTP and SEOsmith operations.
 - [`../contract/vendor/plugin-contract/`](../contract/vendor/plugin-contract) —
-  **pinned** canonical capabilities, fixtures (31 scenarios) and validator, with
+  **pinned** canonical capabilities, fixtures (34 scenarios) and validator, with
   `PIN.json` sha256 hashes.
 - [`../scripts/check-contract.mjs`](../scripts/check-contract.mjs) — PIN hashes,
   Pi profile and projection vs canonical.

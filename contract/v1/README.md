@@ -13,7 +13,7 @@ calls a backend, or installs a package.
 | `host.json` | Pi profile | Pi version, package status, transports, auth, distribution, sources, gates, `readiness`, `provenance`. |
 | `operations.json` | Pi projection | The 25 canonical operations copied verbatim (id/binding/effect/transport/backend/gate) with Pi `hostCapability`, `hostSupport` and `adapter`. |
 | `../vendor/plugin-contract/v1/capabilities.json` | pinned canonical | 25 exact canonical operations. |
-| `../vendor/plugin-contract/v1/conformance.json` | pinned canonical | `contractVersion 1.0.0`, 31 normalized scenarios. |
+| `../vendor/plugin-contract/v1/conformance.json` | pinned canonical | `contractVersion 1.0.0`, 34 normalized scenarios. |
 | `../vendor/plugin-contract/v1/skills.lock.json` | pinned canonical | HTP shared-skill hashes (parity check **not** implemented on the Pi side). |
 | `../vendor/plugin-contract/plugin-contract.mjs` | pinned canonical | Shared offline validator (`validateResults`, `validateObservation`). |
 | `../vendor/plugin-contract/PIN.json` | pin record | Source repo/branch/PR/commit and sha256 of every pinned file. **Provisional** until HTP PR #36 merges. |

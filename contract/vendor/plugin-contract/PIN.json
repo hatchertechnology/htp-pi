@@ -4,20 +4,20 @@
     "repo": "hatchertechnology/htp",
     "branch": "wave0/plugin-contract",
     "pullRequest": "https://github.com/hatchertechnology/htp/pull/36",
-    "commit": "43375d313b75bf1c7ad89d947d499c30ad515e59",
-    "canonicalRevision": "HTP PR #36 (unmerged at pin time)",
-    "note": "Provisional pin. The contract lead is revising bindings/scenarios on PR #36; re-pin consistent hashes when that head advances and finalize against the merged commit. No absolute local paths are recorded."
+    "commit": "4152a32ee4960b9c1545fdbea9ba866dafb4a3ea",
+    "canonicalRevision": "HTP PR #36 (unmerged at pin time; advances as the lead revises)",
+    "note": "Provisional pin. Re-pin consistent hashes when the PR #36 head advances and finalize against the merged commit. No absolute local paths are recorded."
   },
   "contractVersion": "1.0.0",
   "refreshedOn": "2026-11-16",
   "files": [
     {
       "path": "v1/capabilities.json",
-      "sha256": "10ba77585c9bbf265dddfbbaf3cbff102a1768d338aa4af4111f1688f578bcb9"
+      "sha256": "e0cab67b2bc87017f73dcb18e72e3fc542a91772f9e303fde52b09e4d1e03814"
     },
     {
       "path": "v1/conformance.json",
-      "sha256": "7a5a77f68ab41203eb3d7ef54019c1b7ecba54b939f282a12b3b50ca5271d426"
+      "sha256": "7261a2690f4f653671622e31bdd0309a35e0f926b1953ff7bdbcde34da107b24"
     },
     {
       "path": "v1/skills.lock.json",
@@ -25,7 +25,7 @@
     },
     {
       "path": "plugin-contract.mjs",
-      "sha256": "2bc5098ef646f13eca210d90eabbf55b5c4c3f833717d06adb2c158a8b97365d"
+      "sha256": "130b9d3ca0710fc5ed6c4ae931a45add9affc3ad181a4d8b0a635170e3eb8775"
     }
   ]
 }
