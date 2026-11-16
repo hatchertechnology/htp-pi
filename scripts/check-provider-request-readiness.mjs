@@ -13,7 +13,7 @@ assert.equal(lock.canonicalCommit, 'e19875d0d6e74b5d990e45e456656c99dacc89d1');
 assert.equal(lock.sourcePR, 44);
 assert.equal(lock.backendPR, 45);
 assert.equal(lock.backendCommit, '48485a55773b1ca97e165a4715d343704270266e');
-assert.deepEqual(lock.activationGates, ['htp#34', 'seosmith#18', 'host-package-wave1', 'deployed-provider-input-schemas', 'host-oauth-live-acceptance']);
+assert.deepEqual(lock.activationGates, ['htp#34', 'seosmith-host-adapter-live-acceptance', 'host-package-wave1', 'deployed-provider-input-schemas', 'host-oauth-live-acceptance']);
 const expected = [
   'scripts/plugin-contract.mjs', 'scripts/provider-request-contract.mjs',
   'docs/plugin-contract/v1.1/provider-requests.json',

@@ -6,7 +6,7 @@
   "backendCommit": "48485a55773b1ca97e165a4715d343704270266e",
   "activationGates": [
     "htp#34",
-    "seosmith#18",
+    "seosmith-host-adapter-live-acceptance",
     "host-package-wave1",
     "deployed-provider-input-schemas",
     "host-oauth-live-acceptance"

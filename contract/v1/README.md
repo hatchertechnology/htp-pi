@@ -93,4 +93,5 @@ parity and synthetic semantic traces; `--provider-results results.json` accepts
 Pi traces with measured contexts for all scenarios or synthetic contexts.
 Vendored-source parity does not establish installed skill parity, authentication,
 live host normalization, backend deployment, or lifecycle behavior. HTP and
-SEOsmith capability gates remain open; host issue #1 remains open.
+Pi SEOsmith host-adapter live acceptance remains open; SEOsmith #18 is
+fulfilled initial-adapter provenance. Host issue #1 remains open.

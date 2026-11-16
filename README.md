@@ -32,7 +32,8 @@ pins HTP PR #44 merge `e19875d0d6e74b5d990e45e456656c99dacc89d1`
 and backend PR #45 merge `48485a55773b1ca97e165a4715d343704270266e`.
 Its nine vendored files and semantic traces are checked offline. This establishes
 vendored-source parity only, not installed skills or live host behavior. HTP
-and SEOsmith activation gates remain open.
+and Pi SEOsmith host-adapter live acceptance remain open. SEOsmith #18
+completed the initial adapter contract and is fulfilled provenance.
 
 ## Check
 
