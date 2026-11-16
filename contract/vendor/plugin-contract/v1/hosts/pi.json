@@ -41,5 +41,20 @@
     "https://pi.dev",
     "https://www.npmjs.com/package/@earendil-works/pi-coding-agent",
     "https://registry.npmjs.org/@earendil-works/pi-coding-agent/-/pi-coding-agent-1.5.2.tgz"
-  ]
+  ],
+  "provenance": {
+    "cliVersion": "1.5.2",
+    "package": "@earendil-works/pi-coding-agent",
+    "packageVersion": "1.5.2",
+    "docsUsed": [
+      "mcp.md",
+      "extensions.md",
+      "packages.md",
+      "skills.md",
+      "cli.md",
+      "security.md",
+      "environment-variables.md"
+    ],
+    "note": "Versioned npm tarball docs are the portable reference; declared repository docs may be private."
+  }
 }

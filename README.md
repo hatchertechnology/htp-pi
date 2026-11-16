@@ -38,8 +38,8 @@ npm run probe     # installed-runtime capability probe
 fixtures' expected values: it proves the Pi files carry the canonical contract
 shape, not that an adapter works. Pass `--results produced.json` for real
 adapter observations. The pin in `contract/vendor/plugin-contract/PIN.json` is
-provisional until HTP PR #36 merges, and the shared-skill parity check is not
-implemented on the Pi side.
+**merged** against canonical HTP PR #36 (`3db3e43`), and the shared-skill parity
+check is not implemented on the Pi side.
 
 No network, no live adapter, no credentials.
 

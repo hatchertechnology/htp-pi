@@ -4,7 +4,10 @@
   "observedVersion": "1.5.2",
   "minimumVersion": null,
   "packageStatus": "not-implemented",
-  "transports": ["streamable-http", "stdio"],
+  "transports": [
+    "streamable-http",
+    "stdio"
+  ],
   "auth": {
     "method": "host-oauth",
     "login": "pi mcp login <server>",
@@ -33,9 +36,16 @@
     "cliVersion": "1.5.2",
     "package": "@earendil-works/pi-coding-agent",
     "packageVersion": "1.5.2",
-    "declaredRepository": "git+https://github.com/earendil-works/pi.git",
-    "docsUsed": ["mcp.md", "extensions.md", "packages.md", "skills.md", "cli.md", "security.md", "environment-variables.md"],
-    "note": "Evidence read from the installed @earendil-works/pi-coding-agent package for the observed version; the declared GitHub repository may be private (doc URLs 404). No absolute local paths are recorded."
+    "docsUsed": [
+      "mcp.md",
+      "extensions.md",
+      "packages.md",
+      "skills.md",
+      "cli.md",
+      "security.md",
+      "environment-variables.md"
+    ],
+    "note": "Versioned npm tarball docs are the portable reference; declared repository docs may be private."
   },
   "readiness": {
     "htp": "requires live host OAuth/read smoke test",

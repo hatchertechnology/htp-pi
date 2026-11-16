@@ -66,8 +66,8 @@ try {
 if (pin) {
   scanAbsolute(pin, "PIN.json");
   if (pin.contractVersion !== "1.0.0") fail('PIN.json: contractVersion must be "1.0.0"');
-  if (!["provisional", "final"].includes(pin.status)) {
-    fail('PIN.json: status must be "provisional" or "final"');
+  if (!["provisional", "merged"].includes(pin.status)) {
+    fail('PIN.json: status must be "provisional" or "merged"');
   }
   const src = pin.source;
   if (!isObj(src)) {
@@ -79,6 +79,9 @@ if (pin) {
     }
     if (pin.status === "provisional" && !isStr(src.canonicalRevision)) {
       fail("PIN.json: provisional pin must name the unmerged canonical revision");
+    }
+    if (pin.status === "merged" && !isStr(src.canonicalRevision)) {
+      fail("PIN.json: merged pin must name the canonical revision");
     }
   }
   if (!isArr(pin.files) || pin.files.length === 0) {
@@ -166,14 +169,14 @@ if (host) {
   // Parity with the pinned canonical Pi profile (local-only extras excluded).
   let canonicalProfile = null;
   try {
-    canonicalProfile = readJson(join(vendor, "v1", "hosts", "pi.canonical.json"));
+    canonicalProfile = readJson(join(vendor, "v1", "hosts", "pi.json"));
   } catch (err) {
     fail(`canonical Pi profile: cannot read/parse: ${err.message}`);
   }
   if (canonicalProfile) {
     const PROFILE_FIELDS = [
       "host", "displayName", "observedVersion", "minimumVersion", "packageStatus",
-      "transports", "auth", "distribution", "sources", "gates", "readiness",
+      "transports", "auth", "distribution", "sources", "gates", "readiness", "provenance",
     ];
     for (const field of PROFILE_FIELDS) {
       if (!equalJson(host[field] ?? null, canonicalProfile[field] ?? null)) {

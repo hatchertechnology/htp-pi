@@ -1,12 +1,12 @@
 {
-  "status": "provisional",
+  "status": "merged",
   "source": {
     "repo": "hatchertechnology/htp",
-    "branch": "wave0/plugin-contract",
+    "branch": "main",
     "pullRequest": "https://github.com/hatchertechnology/htp/pull/36",
-    "commit": "328bda3343d133da737ee30e54e47e91120d2bcb",
-    "canonicalRevision": "HTP PR #36 DeepSeek revision (unmerged)",
-    "note": "Provisional pin, frozen after this repin until the contract lead declares PR #36 stable. v1/hosts/pi.canonical.json mirrors the canonical host profile with the local-only provenance block omitted. Re-pin all hashes once against the merged canonical commit."
+    "commit": "3db3e439ec0adc99211d49358a7cb8a29507a940",
+    "canonicalRevision": "HTP PR #36 merged into main",
+    "note": "Final pin against the merged canonical commit. All five vendored artifacts are copied verbatim from that commit and their sha256 values are recorded below."
   },
   "contractVersion": "1.0.0",
   "refreshedOn": "2026-11-16",
@@ -24,8 +24,8 @@
       "sha256": "241fbeffd1f9b36f82f7c90869d7ac70a8f3c40e04700b032acc0ed5386b3d83"
     },
     {
-      "path": "v1/hosts/pi.canonical.json",
-      "sha256": "d23f6e2b4791ef20740da38f792634c4a72b788c0a4456af1d2358dd59f6d727"
+      "path": "v1/hosts/pi.json",
+      "sha256": "7d385211913d668506fd899bd1ea195645bf66d69b5dad73864277685258c10c"
     },
     {
       "path": "plugin-contract.mjs",

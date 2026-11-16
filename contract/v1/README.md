@@ -15,9 +15,9 @@ calls a backend, or installs a package.
 | `../vendor/plugin-contract/v1/capabilities.json` | pinned canonical | 25 exact canonical operations. |
 | `../vendor/plugin-contract/v1/conformance.json` | pinned canonical | `contractVersion 1.0.0`, 38 normalized scenarios. |
 | `../vendor/plugin-contract/v1/skills.lock.json` | pinned canonical | HTP shared-skill hashes (parity check **not** implemented on the Pi side). |
-| `../vendor/plugin-contract/v1/hosts/pi.canonical.json` | pinned canonical | Canonical Pi profile fields (local-only `provenance` omitted); compared to `host.json`. |
+| `../vendor/plugin-contract/v1/hosts/pi.json` | pinned canonical | Canonical Pi profile; local `host.json` is compared field-for-field to it. |
 | `../vendor/plugin-contract/plugin-contract.mjs` | pinned canonical | Shared offline validator (`validateResults`, `validateObservation`). |
-| `../vendor/plugin-contract/PIN.json` | pin record | Source repo/branch/PR/commit and sha256 of every pinned file. **Provisional** until HTP PR #36 merges. |
+| `../vendor/plugin-contract/PIN.json` | pin record | Source repo/branch/PR/commit and sha256 of every pinned file. **Merged** against HTP PR #36 (`3db3e43`). |
 
 ## host.json
 
@@ -58,7 +58,7 @@ Two canonical facts matter:
 - `htp.request_website_report` is provider report collection, **not** durable
   crawl scheduling; its scenario expects `source: "provider-collection"` and
   `status: "pending"`.
-- `htp.inspect_website_url` is a present baseline tool (effect `write`); HTP #10
+- `htp.inspect_website_url` is a present baseline tool (effect `read`); HTP #10
   enrichments are separate/gated.
 
 ## Checks
@@ -78,4 +78,6 @@ observations.
 
 Parity/limitations for Wave 0: no installable package, no adapter, no live HTP
 OAuth, and **no shared-skill parity check** on the Pi side (the skill lock is
-only vendored/hash-verified). The pin is provisional until HTP PR #36 merges.
+only vendored/hash-verified). The pin is **merged** against canonical HTP PR #36
+commit `3db3e43`; all five vendored artifacts were copied verbatim from it and
+their sha256 recorded.

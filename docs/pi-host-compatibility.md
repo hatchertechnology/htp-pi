@@ -216,11 +216,10 @@ Full detail is in `contract/v1/operations.json`. Wave 0 status:
   canonical schema changes.
 - `contract/v1/operations.json` uses the canonical operation ids, copied
   field-by-field from the pinned capabilities; the local check enforces
-  equality. The local host profile is likewise compared against the pinned
-  canonical Pi profile fields (`v1/hosts/pi.canonical.json`, local-only
-  `provenance` omitted).
-- The pin is **provisional** (HTP PR #36, unmerged, H1-H4 changes pending) and
-  is frozen until the contract lead says it is stabilized; it will be re-pinned
-  once against the merged canonical commit. The declared GitHub doc URLs may 404
-  (repo may be private); the installed package docs are authoritative (see
-  `contract/v1/host.json` `provenance`).
+  equality. The local host profile is likewise compared field-for-field against
+  the pinned canonical Pi profile (`v1/hosts/pi.json`).
+- The pin is **merged** against canonical HTP PR #36 commit
+  `3db3e439ec0adc99211d49358a7cb8a29507a940`; all five vendored artifacts were
+  copied verbatim from that merged commit and their sha256 recorded. The
+  declared GitHub doc URLs may 404 (repo may be private); the installed package
+  docs are authoritative (see `contract/v1/host.json` `provenance`).
