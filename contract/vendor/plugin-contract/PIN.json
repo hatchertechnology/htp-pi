@@ -4,28 +4,32 @@
     "repo": "hatchertechnology/htp",
     "branch": "wave0/plugin-contract",
     "pullRequest": "https://github.com/hatchertechnology/htp/pull/36",
-    "commit": "4152a32ee4960b9c1545fdbea9ba866dafb4a3ea",
-    "canonicalRevision": "HTP PR #36 (unmerged at pin time; advances as the lead revises)",
-    "note": "Provisional pin. Re-pin consistent hashes when the PR #36 head advances and finalize against the merged commit. No absolute local paths are recorded."
+    "commit": "328bda3343d133da737ee30e54e47e91120d2bcb",
+    "canonicalRevision": "HTP PR #36 DeepSeek revision (unmerged)",
+    "note": "Provisional pin, frozen after this repin until the contract lead declares PR #36 stable. v1/hosts/pi.canonical.json mirrors the canonical host profile with the local-only provenance block omitted. Re-pin all hashes once against the merged canonical commit."
   },
   "contractVersion": "1.0.0",
   "refreshedOn": "2026-11-16",
   "files": [
     {
       "path": "v1/capabilities.json",
-      "sha256": "e0cab67b2bc87017f73dcb18e72e3fc542a91772f9e303fde52b09e4d1e03814"
+      "sha256": "705661c59702ff1ace3ed7a86d09796c66b60149b561f07832f0d8e28f6499ab"
     },
     {
       "path": "v1/conformance.json",
-      "sha256": "7261a2690f4f653671622e31bdd0309a35e0f926b1953ff7bdbcde34da107b24"
+      "sha256": "f083ad45141f1fe1b315d736d6e0f4783e826caae2398572ba58da9e03748c18"
     },
     {
       "path": "v1/skills.lock.json",
       "sha256": "241fbeffd1f9b36f82f7c90869d7ac70a8f3c40e04700b032acc0ed5386b3d83"
     },
     {
+      "path": "v1/hosts/pi.canonical.json",
+      "sha256": "d23f6e2b4791ef20740da38f792634c4a72b788c0a4456af1d2358dd59f6d727"
+    },
+    {
       "path": "plugin-contract.mjs",
-      "sha256": "130b9d3ca0710fc5ed6c4ae931a45add9affc3ad181a4d8b0a635170e3eb8775"
+      "sha256": "cad9798593f413961781b2188590c7f57cf785926b84d143daf173068eda4d08"
     }
   ]
 }

@@ -2,7 +2,7 @@
   "contractVersion": "1.0.0",
   "host": "pi",
   "source": "contract/vendor/plugin-contract/v1/capabilities.json",
-  "notes": "Pi projection over the exact canonical operations (id/binding/effect/backend/package/transport/gate copied verbatim and enforced by check-contract.mjs). hostCapability records raw transport reachability only; hostSupport is 'gated' and adapter is 'not-implemented' for EVERY operation until a real adapter exists, so nothing here implies the operation works.",
+  "notes": "Pi projection over the exact canonical operations (id/binding/effect/backend/package/transport/primitiveBinding/gate copied verbatim and enforced by check-contract.mjs). hostCapability is transport reachability only: 'reachable' (MCP streamable HTTP, or a CLI primitive via pi.exec), 'gated' (private HTTP primitive needing explicit private config), 'unreachable' (no transport and no local primitive). hostSupport is 'gated' and adapter is 'not-implemented' for EVERY operation until an adapter exists.",
   "operations": [
     {
       "id": "htp.get_provider_connection",
@@ -12,6 +12,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -26,6 +27,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -40,6 +42,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -54,6 +57,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -68,6 +72,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -82,6 +87,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -96,6 +102,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -110,6 +117,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -120,10 +128,11 @@
       "id": "htp.inspect_website_url",
       "service": "htp",
       "binding": "inspect_website_url",
-      "effect": "write",
+      "effect": "read",
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -138,6 +147,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -152,6 +162,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -166,6 +177,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -180,6 +192,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -194,6 +207,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -208,6 +222,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -222,6 +237,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -236,6 +252,7 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
+      "primitiveBinding": null,
       "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
@@ -250,11 +267,15 @@
       "backend": "gated",
       "package": "not-implemented",
       "transport": null,
-      "hostCapability": "unreachable",
+      "primitiveBinding": {
+        "transport": "private-http",
+        "binding": "POST /v1/runs"
+      },
+      "hostCapability": "gated",
       "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "SEOsmith #18 CLI adapter integration and host acceptance remain unverified",
-      "notes": "202 request_id; identity conflict is 409"
+      "notes": "Synthetic target semantics only; precise status/error normalization is gated on verified adapter evidence."
     },
     {
       "id": "seosmith.status",
@@ -264,11 +285,15 @@
       "backend": "gated",
       "package": "not-implemented",
       "transport": null,
-      "hostCapability": "unreachable",
+      "primitiveBinding": {
+        "transport": "private-http",
+        "binding": "GET /v1/runs/{id}"
+      },
+      "hostCapability": "gated",
       "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "SEOsmith #18 CLI adapter integration and host acceptance remain unverified",
-      "notes": "stored job status or 404"
+      "notes": "Synthetic target semantics only; precise status/error normalization is gated on verified adapter evidence."
     },
     {
       "id": "seosmith.cancel",
@@ -278,11 +303,15 @@
       "backend": "gated",
       "package": "not-implemented",
       "transport": null,
-      "hostCapability": "unreachable",
+      "primitiveBinding": {
+        "transport": "private-http",
+        "binding": "POST /v1/runs/{id}/cancel"
+      },
+      "hostCapability": "gated",
       "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "SEOsmith #18 CLI adapter integration and host acceptance remain unverified",
-      "notes": "202 accepted; 409 not cancellable; acceptance is not completion"
+      "notes": "Synthetic target semantics only; precise status/error normalization is gated on verified adapter evidence."
     },
     {
       "id": "seosmith.report",
@@ -292,11 +321,15 @@
       "backend": "gated",
       "package": "not-implemented",
       "transport": null,
-      "hostCapability": "unreachable",
+      "primitiveBinding": {
+        "transport": "private-http",
+        "binding": "GET /v1/runs/{id}/report"
+      },
+      "hostCapability": "gated",
       "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "SEOsmith #18 CLI adapter integration and host acceptance remain unverified",
-      "notes": "original report JSON or 404; not-ready is not empty success"
+      "notes": "Synthetic target semantics only; precise status/error normalization is gated on verified adapter evidence."
     },
     {
       "id": "seosmith.export",
@@ -306,11 +339,15 @@
       "backend": "gated",
       "package": "not-implemented",
       "transport": null,
+      "primitiveBinding": {
+        "transport": null,
+        "binding": null
+      },
       "hostCapability": "unreachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "SEOsmith #18 CLI adapter integration and host acceptance remain unverified",
-      "notes": "bounded original report bytes plus schema/version/provenance; no invented evaluations"
+      "notes": "Synthetic target semantics only; precise status/error normalization is gated on verified adapter evidence."
     },
     {
       "id": "seosmith.cli.crawl",
@@ -320,11 +357,15 @@
       "backend": "gated",
       "package": "not-implemented",
       "transport": null,
-      "hostCapability": "unreachable",
+      "primitiveBinding": {
+        "transport": "cli",
+        "binding": "seosmith crawl --request <file>"
+      },
+      "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "SEOsmith #18 CLI adapter integration and host acceptance remain unverified",
-      "notes": "JSON report"
+      "notes": "Synthetic target semantics only; precise status/error normalization is gated on verified adapter evidence."
     },
     {
       "id": "seosmith.cli.rules",
@@ -334,11 +375,15 @@
       "backend": "gated",
       "package": "not-implemented",
       "transport": null,
-      "hostCapability": "unreachable",
+      "primitiveBinding": {
+        "transport": "cli",
+        "binding": "seosmith rules"
+      },
+      "hostCapability": "reachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "SEOsmith #18 CLI adapter integration and host acceptance remain unverified",
-      "notes": "JSON rules"
+      "notes": "Synthetic target semantics only; precise status/error normalization is gated on verified adapter evidence."
     },
     {
       "id": "seosmith.ci.baseline",
@@ -348,11 +393,15 @@
       "backend": "gated",
       "package": "not-implemented",
       "transport": null,
+      "primitiveBinding": {
+        "transport": null,
+        "binding": null
+      },
       "hostCapability": "unreachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "SEOsmith #18 CLI adapter integration and host acceptance remain unverified",
-      "notes": "future baseline-aware pass/fail/inconclusive"
+      "notes": "Synthetic target semantics only; precise status/error normalization is gated on verified adapter evidence."
     }
   ]
 }

@@ -2,12 +2,14 @@
 // Offline validator for the Wave 0 Pi host files and the pinned canonical pin.
 //
 // - Verifies contract/vendor/plugin-contract/PIN.json hashes against the pinned
-//   canonical fixtures/operations/validator, and rejects a provisional pin that
-//   points at an unmerged PR without saying so.
-// - Validates the local Pi host profile (contract/v1/host.json).
+//   canonical fixtures/operations/validator and the canonical Pi profile mirror.
+// - Validates the local Pi host profile (contract/v1/host.json), including
+//   parity with the canonical profile fields.
 // - Validates the Pi operations projection (contract/v1/operations.json)
-//   FIELD BY FIELD against the pinned canonical operations.
-// - Rejects absolute local paths in published contract metadata.
+//   FIELD BY FIELD against the pinned canonical operations, including a
+//   transport-based hostCapability derivation that never conflates a gated
+//   operation with an incapable host.
+// - Rejects absolute local paths in published files.
 //
 // The shared normalized-observation check lives in scripts/check-host-results.mjs.
 // No network, no live adapter. Run: node scripts/check-contract.mjs
@@ -30,7 +32,8 @@ const isArr = Array.isArray;
 const equalJson = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
 // Published contract metadata must not leak local absolute paths / usernames.
-const ABS_PATH = /^(?:\/home\/|\/mnt\/|\/Users\/|\/root\/|\/private\/|\/var\/folders\/|[A-Za-z]:\\)/;
+// A bare `~/...` is a portable home reference, not a leak, so it is not matched.
+const ABS_PATH = /(?:\/home\/|\/mnt\/|\/Users\/|\/root\/|\/private\/|\/var\/folders\/|\/tmp\/|[A-Za-z]:\\|\\\\)/;
 function scanAbsolute(value, where) {
   if (typeof value === "string") {
     if (ABS_PATH.test(value)) fail(`${where}: absolute local path leaked: "${value}"`);
@@ -39,6 +42,17 @@ function scanAbsolute(value, where) {
   } else if (isObj(value)) {
     for (const [k, v] of Object.entries(value)) scanAbsolute(v, `${where}.${k}`);
   }
+}
+function scanTextFile(rel) {
+  let text;
+  try {
+    text = readFileSync(join(root, rel), "utf8");
+  } catch {
+    return;
+  }
+  text.split("\n").forEach((line, i) => {
+    if (ABS_PATH.test(line)) fail(`${rel}:${i + 1}: absolute local path leaked`);
+  });
 }
 
 // ---------- pinned canonical contract ----------
@@ -95,7 +109,7 @@ try {
 const canonicalOps = capabilities?.operations ?? [];
 const canonicalById = new Map(canonicalOps.map((o) => [o.id, o]));
 
-// ---------- local host profile ----------
+// ---------- local host profile (and parity) ----------
 let host = null;
 try {
   host = readJson(join(root, "contract", "v1", "host.json"));
@@ -149,6 +163,24 @@ if (host) {
   if (!isObj(host.readiness) || !isStr(host.readiness.htp) || !isStr(host.readiness.seosmith)) {
     fail("host.json: readiness must address both htp and seosmith");
   }
+  // Parity with the pinned canonical Pi profile (local-only extras excluded).
+  let canonicalProfile = null;
+  try {
+    canonicalProfile = readJson(join(vendor, "v1", "hosts", "pi.canonical.json"));
+  } catch (err) {
+    fail(`canonical Pi profile: cannot read/parse: ${err.message}`);
+  }
+  if (canonicalProfile) {
+    const PROFILE_FIELDS = [
+      "host", "displayName", "observedVersion", "minimumVersion", "packageStatus",
+      "transports", "auth", "distribution", "sources", "gates", "readiness",
+    ];
+    for (const field of PROFILE_FIELDS) {
+      if (!equalJson(host[field] ?? null, canonicalProfile[field] ?? null)) {
+        fail(`host.json: field "${field}" diverges from the canonical Pi profile`);
+      }
+    }
+  }
 }
 
 // ---------- operations projection ----------
@@ -158,7 +190,18 @@ try {
 } catch (err) {
   fail(`operations.json: cannot read/parse: ${err.message}`);
 }
-const CANON_FIELDS = ["id", "service", "binding", "effect", "backend", "package", "transport", "gate"];
+const CANON_FIELDS = [
+  "id", "service", "binding", "effect", "backend", "package", "transport", "primitiveBinding", "gate",
+];
+// Transport reachability policy. A gated operation must never be labelled
+// "unreachable" when the host can still reach its underlying primitive.
+function expectedHostCapability(canon) {
+  if (canon.transport !== null && canon.transport !== undefined) return "reachable";
+  const primitive = canon.primitiveBinding?.transport;
+  if (primitive === "cli") return "reachable";
+  if (primitive === "private-http") return "gated";
+  return "unreachable";
+}
 if (projection) {
   scanAbsolute(projection, "operations.json");
   if (projection.contractVersion !== "1.0.0") fail('operations.json: contractVersion must be "1.0.0"');
@@ -184,7 +227,6 @@ if (projection) {
         fail(`operations.json: ${op.id} is not a canonical operation`);
         continue;
       }
-      // Field-by-field equality with the canonical inventory.
       for (const field of CANON_FIELDS) {
         if (!equalJson(op[field] ?? null, canon[field] ?? null)) {
           fail(
@@ -194,15 +236,9 @@ if (projection) {
         }
       }
       if (!["read", "write"].includes(op.effect)) fail(`operations.json: ${op.id} invalid effect`);
-      if (!["reachable", "unreachable"].includes(op.hostCapability)) {
-        fail(`operations.json: ${op.id} hostCapability must be reachable|unreachable`);
-      }
-      const expectReach = canon.transport !== null;
-      if (expectReach && op.hostCapability !== "reachable") {
-        fail(`operations.json: ${op.id} transport exists so hostCapability must be reachable`);
-      }
-      if (!expectReach && op.hostCapability !== "unreachable") {
-        fail(`operations.json: ${op.id} has no transport so hostCapability must be unreachable`);
+      const expect = expectedHostCapability(canon);
+      if (op.hostCapability !== expect) {
+        fail(`operations.json: ${op.id} hostCapability must be "${expect}" (got "${op.hostCapability}")`);
       }
       if (!["supported", "gated", "unsupported"].includes(op.hostSupport)) {
         fail(`operations.json: ${op.id} invalid hostSupport`);
@@ -210,7 +246,6 @@ if (projection) {
       if (!["not-implemented", "fixture-defined", "implemented"].includes(op.adapter)) {
         fail(`operations.json: ${op.id} invalid adapter`);
       }
-      // Wording guard: never claim an operation is supported before an adapter exists.
       if (op.adapter !== "implemented" && op.hostSupport === "supported") {
         fail(`operations.json: ${op.id} claims hostSupport=supported while adapter=${op.adapter}`);
       }
@@ -221,9 +256,15 @@ if (projection) {
   }
 }
 
+// ---------- published text files ----------
+for (const rel of ["README.md", "package.json", "contract/v1/README.md", "docs/pi-host-compatibility.md"]) {
+  scanTextFile(rel);
+}
+
 // ---------- report ----------
 if (errors.length) {
-  console.error(`Pi host contract check FAILED (${errors.length} error${errors.length === 1 ? "" : "s"}):`);
+  const plural = errors.length === 1 ? "" : "s";
+  console.error(`Pi host contract check FAILED (${errors.length} error${plural}):`);
   for (const e of errors) console.error(`  - ${e}`);
   process.exit(1);
 }

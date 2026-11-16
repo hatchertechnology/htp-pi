@@ -14,7 +14,7 @@ Companion machine-readable files:
 - [`../contract/v1/operations.json`](../contract/v1/operations.json) — Pi
   projection over the 25 canonical HTP and SEOsmith operations.
 - [`../contract/vendor/plugin-contract/`](../contract/vendor/plugin-contract) —
-  **pinned** canonical capabilities, fixtures (34 scenarios) and validator, with
+  **pinned** canonical capabilities, fixtures (38 scenarios) and validator, with
   `PIN.json` sha256 hashes.
 - [`../scripts/check-contract.mjs`](../scripts/check-contract.mjs) — PIN hashes,
   Pi profile and projection vs canonical.
@@ -178,10 +178,13 @@ Full detail is in `contract/v1/operations.json`. Wave 0 status:
   bounded `pi.exec`/`bash`.
 - **Host capability vs implemented adapter (distinct):** every HTP and
   SEOsmith operation is `hostSupport: "gated"` with `adapter:
-  "not-implemented"`. `hostCapability` separately records raw transport
-  reachability (MCP/CLI/private HTTP); it is not a claim that an adapter exists.
-  Only when an adapter is implemented may an operation become `hostSupport:
-  "supported"`.
+  "not-implemented"`; nothing implies an operation works. `hostCapability`
+  separately records raw transport reachability: `reachable` (streamable HTTP
+  MCP, or a CLI primitive via `pi.exec`/`bash`), `gated` (a private-HTTP
+  primitive that needs explicit private configuration), `unreachable` (no
+  transport and no local primitive). A gated operation is never labelled
+  incapable. Only when an adapter is implemented may an operation become
+  `hostSupport: "supported"`.
 - **HTP baseline vs gated:** `inspect_website_url` is an existing baseline
   surface (not gated); HTP #10 search/inspection *enrichments* are separate and
   gated. `request_website_report` is provider report collection, **not** durable
@@ -211,8 +214,13 @@ Full detail is in `contract/v1/operations.json`. Wave 0 status:
 - Canonical shared fixtures/descriptor schema are owned by HTP #34 (lead t11);
   the files here mirror that schema for the Pi host and must be reconciled if the
   canonical schema changes.
-- Operation ids in `contract/v1/operations.json` are **host proposals** with
-  `canonicalId`/`canonicalTool` mappings; they will be aligned when t11's shared
-  file lands. The declared GitHub doc URLs may 404 (repo may be private); the
-  pinned local package docs are authoritative (see
+- `contract/v1/operations.json` uses the canonical operation ids, copied
+  field-by-field from the pinned capabilities; the local check enforces
+  equality. The local host profile is likewise compared against the pinned
+  canonical Pi profile fields (`v1/hosts/pi.canonical.json`, local-only
+  `provenance` omitted).
+- The pin is **provisional** (HTP PR #36, unmerged, H1-H4 changes pending) and
+  is frozen until the contract lead says it is stabilized; it will be re-pinned
+  once against the merged canonical commit. The declared GitHub doc URLs may 404
+  (repo may be private); the installed package docs are authoritative (see
   `contract/v1/host.json` `provenance`).
