@@ -11,12 +11,12 @@ calls a backend, or installs a package.
 | Path | Kind | Purpose |
 | --- | --- | --- |
 | `host.json` | Pi profile | Pi version, package status, transports, auth, distribution, sources, gates, `readiness`, `provenance`. |
-| `operations.json` | Pi projection | The 25 canonical operations copied verbatim (id/binding/effect/transport/backend/gate) with Pi `hostSupport` and `adapter: not-implemented`. |
+| `operations.json` | Pi projection | The 25 canonical operations copied verbatim (id/binding/effect/transport/backend/gate) with Pi `hostCapability`, `hostSupport` and `adapter`. |
 | `../vendor/plugin-contract/v1/capabilities.json` | pinned canonical | 25 exact canonical operations. |
 | `../vendor/plugin-contract/v1/conformance.json` | pinned canonical | `contractVersion 1.0.0`, 31 normalized scenarios. |
-| `../vendor/plugin-contract/v1/skills.lock.json` | pinned canonical | HTP shared-skill hashes. |
+| `../vendor/plugin-contract/v1/skills.lock.json` | pinned canonical | HTP shared-skill hashes (parity check **not** implemented on the Pi side). |
 | `../vendor/plugin-contract/plugin-contract.mjs` | pinned canonical | Shared offline validator (`validateResults`, `validateObservation`). |
-| `../vendor/plugin-contract/PIN.json` | pin record | Source repo/branch, committed head (HTP PR #36) and sha256 of every pinned file. |
+| `../vendor/plugin-contract/PIN.json` | pin record | Source repo/branch/PR/commit and sha256 of every pinned file. **Provisional** until HTP PR #36 merges. |
 
 ## host.json
 
@@ -27,15 +27,28 @@ Canonical profile fields plus two local extras:
   `sse` rejected), `auth` (`method: "host-oauth"`, `login`, `logout`,
   `limitations[]`), `distribution` (`source`/`install`/`upgrade`/`rollback`),
   `sources` (https URLs), `gates[]`, `readiness` (`htp`, `seosmith`).
-- Local extras: `provenance` (pinned install path, package version, docs used)
-  and `readiness` (explicitly not yet satisfied).
+- Local extras: `provenance` (package name/version + docs used; **no absolute
+  local paths**) and `readiness` (explicitly not yet satisfied).
 
 ## operations.json (Pi projection)
 
-`id`, `binding`, `effect`, `backend`, `package`, `transport`, `gate` are copied
-from the pinned `capabilities.json` and must match it exactly. `hostSupport`
-(`supported` | `gated`) records whether Pi can reach the transport, and
-`adapter` is `not-implemented` throughout Wave 0. Two canonical facts matter:
+Three distinct fields, deliberately not conflated:
+
+- `hostCapability` — `reachable` | `unreachable`: whether Pi can reach the
+  operation's transport at all (CLI via `pi.exec`/`bash`, MCP via streamable
+  HTTP, private HTTP via an extension). This is not a claim that an adapter
+  exists.
+- `hostSupport` — `supported` | `gated` | `unsupported`: whether the Pi
+  integration can currently **use** the operation. It is `gated` for every
+  operation in Wave 0 because no adapter is implemented.
+- `adapter` — `not-implemented` for every operation in Wave 0.
+
+`id`, `binding`, `effect`, `backend`, `package`, `transport` and `gate` are
+copied from the pinned `capabilities.json`. `check-contract.mjs` rejects any
+divergence, any `hostSupported=supported` with a non-implemented adapter, or any
+`hostCapability` inconsistent with the transport.
+
+Two canonical facts matter:
 
 - `htp.request_website_report` is provider report collection, **not** durable
   crawl scheduling; its scenario expects `source: "provider-collection"` and
@@ -47,12 +60,17 @@ from the pinned `capabilities.json` and must match it exactly. `hostSupport`
 
 ```sh
 node scripts/check-contract.mjs      # PIN hashes + profile + projection vs canonical
-node scripts/check-host-results.mjs  # shared validateResults over the 31 scenarios
+node scripts/check-host-results.mjs  # shared validateResults (SELF-TEST by default)
 node scripts/check-host-results.mjs --results produced.json
 node scripts/probe-pi-capabilities.mjs
 ```
 
-`check-host-results.mjs` without `--results` builds the Pi envelope from each
-scenario's documented `expected` value. That is a **profile projection**
-conformance run (it proves the Pi host files carry the canonical contract), not
-a live adapter test. Pass `--results` once an adapter produces observations.
+`check-host-results.mjs` without `--results` validates the fixtures' own
+`expected` values. That is a **self-test** that the Pi files carry the canonical
+contract shape — it is **not** Pi conformance evidence and not a live adapter
+test. Pass `--results` (size-capped at 1 MiB) once an adapter produces
+observations.
+
+Parity/limitations for Wave 0: no installable package, no adapter, no live HTP
+OAuth, and **no shared-skill parity check** on the Pi side (the skill lock is
+only vendored/hash-verified). The pin is provisional until HTP PR #36 merges.

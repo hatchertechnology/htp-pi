@@ -30,9 +30,16 @@ package, adapter, or skills. Host issue
 ## Check
 
 ```sh
-npm test          # check-contract + check-host-results
+npm test          # check-contract + check-host-results (self-test)
 npm run probe     # installed-runtime capability probe
 ```
+
+`check-host-results` without `--results` is a **self-test** of the pinned
+fixtures' expected values: it proves the Pi files carry the canonical contract
+shape, not that an adapter works. Pass `--results produced.json` for real
+adapter observations. The pin in `contract/vendor/plugin-contract/PIN.json` is
+provisional until HTP PR #36 merges, and the shared-skill parity check is not
+implemented on the Pi side.
 
 No network, no live adapter, no credentials.
 

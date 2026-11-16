@@ -1,15 +1,16 @@
 #!/usr/bin/env node
-// Local Pi host test against the PINNED canonical contract fixtures.
+// Local Pi host check against the PINNED canonical contract fixtures.
 //
 // Uses the vendored canonical validator (contract/vendor/plugin-contract/
-// plugin-contract.mjs) to validate a Pi results envelope for the pinned
-// fixtures. By default it builds the envelope from the fixtures' `expected`
-// values (a host profile-projection conformance run, NOT a live adapter). Pass
-// `--results <file.json>` to validate observations produced by a real adapter.
+// plugin-contract.mjs). Pass `--results <file.json>` to validate observations
+// produced by a real adapter (size-capped at 1 MiB by the vendored readJson).
+//
+// WITHOUT --results this is a SELF-TEST: it validates the fixtures' own
+// documented `expected` values, proving the Pi files carry the canonical
+// contract shape. It is NOT Pi conformance evidence and NOT a live adapter test.
 //
 // Run: node scripts/check-host-results.mjs [--results file.json]
 
-import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { readJson, validateResults } from "../contract/vendor/plugin-contract/plugin-contract.mjs";
@@ -29,20 +30,18 @@ if (args[0] === "--results") {
     console.error("usage: node scripts/check-host-results.mjs [--results file.json]");
     process.exit(2);
   }
-  envelope = JSON.parse(readFileSync(args[1], "utf8"));
+  envelope = readJson(args[1]); // 1 MiB cap, same as the canonical validator
   mode = "adapter observations";
 } else if (args.length) {
   console.error("usage: node scripts/check-host-results.mjs [--results file.json]");
   process.exit(2);
 } else {
-  // Host profile projection: every fixture's documented expected result is what
-  // the Pi adapter must produce. No live side effects are claimed.
   envelope = {
     contractVersion: fixtures.contractVersion,
     host: "pi",
     observations: fixtures.scenarios.map((s) => ({ id: s.id, result: s.expected })),
   };
-  mode = "profile projection (not live)";
+  mode = "SELF-TEST of fixture expected values (not Pi conformance evidence)";
 }
 
 validateResults(fixtures, envelope, ops);

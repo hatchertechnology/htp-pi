@@ -176,8 +176,12 @@ Full detail is in `contract/v1/operations.json`. Wave 0 status:
 - **Host-supported transports/auth/mechanisms:** streamable HTTP MCP, stdio MCP,
   MCP OAuth 2.1 (DCR + CIMD), package distribution, extension API, skills,
   bounded `pi.exec`/`bash`.
-- **Supported host, adapter not implemented:** every HTP and SEOsmith operation.
-  All are recorded with `adapter: "not-implemented"`.
+- **Host capability vs implemented adapter (distinct):** every HTP and
+  SEOsmith operation is `hostSupport: "gated"` with `adapter:
+  "not-implemented"`. `hostCapability` separately records raw transport
+  reachability (MCP/CLI/private HTTP); it is not a claim that an adapter exists.
+  Only when an adapter is implemented may an operation become `hostSupport:
+  "supported"`.
 - **HTP baseline vs gated:** `inspect_website_url` is an existing baseline
   surface (not gated); HTP #10 search/inspection *enrichments* are separate and
   gated. `request_website_report` is provider report collection, **not** durable

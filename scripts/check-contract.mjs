@@ -2,11 +2,12 @@
 // Offline validator for the Wave 0 Pi host files and the pinned canonical pin.
 //
 // - Verifies contract/vendor/plugin-contract/PIN.json hashes against the pinned
-//   canonical fixtures/operations/validator.
-// - Validates the local Pi host profile (contract/v1/host.json) against the
-//   shared profile requirements.
-// - Validates the Pi operations projection (contract/v1/operations.json) against
-//   the pinned canonical operations (contract/vendor/.../capabilities.json).
+//   canonical fixtures/operations/validator, and rejects a provisional pin that
+//   points at an unmerged PR without saying so.
+// - Validates the local Pi host profile (contract/v1/host.json).
+// - Validates the Pi operations projection (contract/v1/operations.json)
+//   FIELD BY FIELD against the pinned canonical operations.
+// - Rejects absolute local paths in published contract metadata.
 //
 // The shared normalized-observation check lives in scripts/check-host-results.mjs.
 // No network, no live adapter. Run: node scripts/check-contract.mjs
@@ -26,6 +27,19 @@ const readJson = (p) => JSON.parse(readFileSync(p, "utf8"));
 const isObj = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 const isStr = (v) => typeof v === "string" && v.length > 0;
 const isArr = Array.isArray;
+const equalJson = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+// Published contract metadata must not leak local absolute paths / usernames.
+const ABS_PATH = /^(?:\/home\/|\/mnt\/|\/Users\/|\/root\/|\/private\/|\/var\/folders\/|[A-Za-z]:\\)/;
+function scanAbsolute(value, where) {
+  if (typeof value === "string") {
+    if (ABS_PATH.test(value)) fail(`${where}: absolute local path leaked: "${value}"`);
+  } else if (Array.isArray(value)) {
+    value.forEach((v, i) => scanAbsolute(v, `${where}[${i}]`));
+  } else if (isObj(value)) {
+    for (const [k, v] of Object.entries(value)) scanAbsolute(v, `${where}.${k}`);
+  }
+}
 
 // ---------- pinned canonical contract ----------
 let pin = null;
@@ -36,7 +50,23 @@ try {
   fail(`PIN.json: cannot read/parse: ${err.message}`);
 }
 if (pin) {
+  scanAbsolute(pin, "PIN.json");
   if (pin.contractVersion !== "1.0.0") fail('PIN.json: contractVersion must be "1.0.0"');
+  if (!["provisional", "final"].includes(pin.status)) {
+    fail('PIN.json: status must be "provisional" or "final"');
+  }
+  const src = pin.source;
+  if (!isObj(src)) {
+    fail("PIN.json: source must be an object");
+  } else {
+    if ("worktree" in src) fail("PIN.json: source.worktree (absolute local path) is not allowed");
+    if (!/^[0-9a-f]{40}$/.test(src.commit ?? "")) {
+      fail("PIN.json: source.commit must be a full 40-hex commit SHA");
+    }
+    if (pin.status === "provisional" && !isStr(src.canonicalRevision)) {
+      fail("PIN.json: provisional pin must name the unmerged canonical revision");
+    }
+  }
   if (!isArr(pin.files) || pin.files.length === 0) {
     fail("PIN.json: files must be a non-empty array");
   } else {
@@ -48,7 +78,7 @@ if (pin) {
       let bytes;
       try {
         bytes = readFileSync(join(vendor, f.path));
-      } catch (err) {
+      } catch {
         fail(`PIN.json: pinned file missing: ${f.path}`);
         continue;
       }
@@ -63,7 +93,7 @@ try {
   fail(`capabilities.json: cannot read/parse: ${err.message}`);
 }
 const canonicalOps = capabilities?.operations ?? [];
-const canonicalIds = new Set(canonicalOps.map((o) => o.id));
+const canonicalById = new Map(canonicalOps.map((o) => [o.id, o]));
 
 // ---------- local host profile ----------
 let host = null;
@@ -73,6 +103,7 @@ try {
   fail(`host.json: cannot read/parse: ${err.message}`);
 }
 if (host) {
+  scanAbsolute(host, "host.json");
   for (const key of [
     "host", "displayName", "observedVersion", "minimumVersion", "packageStatus",
     "transports", "auth", "distribution", "sources", "gates", "readiness",
@@ -127,7 +158,9 @@ try {
 } catch (err) {
   fail(`operations.json: cannot read/parse: ${err.message}`);
 }
+const CANON_FIELDS = ["id", "service", "binding", "effect", "backend", "package", "transport", "gate"];
 if (projection) {
+  scanAbsolute(projection, "operations.json");
   if (projection.contractVersion !== "1.0.0") fail('operations.json: contractVersion must be "1.0.0"');
   if (projection.host !== "pi") fail('operations.json: host must be "pi"');
   if (!isArr(projection.operations)) {
@@ -138,22 +171,52 @@ if (projection) {
         `operations.json: expected ${canonicalOps.length} canonical operations, found ${projection.operations.length}`,
       );
     }
+    const seen = new Set();
     for (const op of projection.operations) {
-      for (const key of ["id", "service", "binding", "effect", "backend", "package", "transport", "hostSupport", "adapter", "gate", "notes"]) {
-        if (!(key in op)) fail(`operations.json: ${op.id ?? "?"} missing "${key}"`);
+      if (!isObj(op) || !isStr(op.id)) {
+        fail("operations.json: every operation needs a string id");
+        continue;
       }
-      if (!canonicalIds.has(op.id)) fail(`operations.json: ${op.id} is not a canonical operation`);
+      if (seen.has(op.id)) fail(`operations.json: duplicate operation ${op.id}`);
+      seen.add(op.id);
+      const canon = canonicalById.get(op.id);
+      if (!canon) {
+        fail(`operations.json: ${op.id} is not a canonical operation`);
+        continue;
+      }
+      // Field-by-field equality with the canonical inventory.
+      for (const field of CANON_FIELDS) {
+        if (!equalJson(op[field] ?? null, canon[field] ?? null)) {
+          fail(
+            `operations.json: ${op.id} field "${field}" diverges from canonical ` +
+              `(${JSON.stringify(op[field])} != ${JSON.stringify(canon[field])})`,
+          );
+        }
+      }
       if (!["read", "write"].includes(op.effect)) fail(`operations.json: ${op.id} invalid effect`);
+      if (!["reachable", "unreachable"].includes(op.hostCapability)) {
+        fail(`operations.json: ${op.id} hostCapability must be reachable|unreachable`);
+      }
+      const expectReach = canon.transport !== null;
+      if (expectReach && op.hostCapability !== "reachable") {
+        fail(`operations.json: ${op.id} transport exists so hostCapability must be reachable`);
+      }
+      if (!expectReach && op.hostCapability !== "unreachable") {
+        fail(`operations.json: ${op.id} has no transport so hostCapability must be unreachable`);
+      }
       if (!["supported", "gated", "unsupported"].includes(op.hostSupport)) {
         fail(`operations.json: ${op.id} invalid hostSupport`);
       }
       if (!["not-implemented", "fixture-defined", "implemented"].includes(op.adapter)) {
         fail(`operations.json: ${op.id} invalid adapter`);
       }
+      // Wording guard: never claim an operation is supported before an adapter exists.
+      if (op.adapter !== "implemented" && op.hostSupport === "supported") {
+        fail(`operations.json: ${op.id} claims hostSupport=supported while adapter=${op.adapter}`);
+      }
     }
-    const projectedIds = new Set(projection.operations.map((o) => o.id));
-    for (const id of canonicalIds) {
-      if (!projectedIds.has(id)) fail(`operations.json: canonical operation "${id}" is not projected`);
+    for (const id of canonicalById.keys()) {
+      if (!seen.has(id)) fail(`operations.json: canonical operation "${id}" is not projected`);
     }
   }
 }
@@ -166,6 +229,7 @@ if (errors.length) {
 }
 console.log(
   `Pi host contract OK: host=${host.host} version=${host.observedVersion} ` +
-    `status=${host.packageStatus} pinnedFiles=${pin.files.length} ` +
-    `canonicalOps=${canonicalOps.length} projected=${projection.operations.length}`,
+    `status=${host.packageStatus} pin=${pin.status} pinnedFiles=${pin.files.length} ` +
+    `canonicalOps=${canonicalOps.length} projected=${projection.operations.length} ` +
+    `(all adapter=not-implemented, hostSupport=gated)`,
 );

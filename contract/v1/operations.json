@@ -2,7 +2,7 @@
   "contractVersion": "1.0.0",
   "host": "pi",
   "source": "contract/vendor/plugin-contract/v1/capabilities.json",
-  "notes": "Pi projection over the 25 exact canonical operations. Ids/bindings are copied verbatim from the pinned canonical capabilities; hostSupport records whether Pi can reach the transport, adapter is not-implemented throughout Wave 0, and gate echoes the canonical gate.",
+  "notes": "Pi projection over the 25 exact canonical operations (id/binding/effect/backend/package/transport/gate copied verbatim and enforced by check-contract.mjs). hostCapability records raw transport reachability only; hostSupport is 'gated' and adapter is 'not-implemented' for EVERY operation until a real adapter exists, so nothing here implies the operation works. No host line may set hostSupport 'supported' while adapter is 'not-implemented'.",
   "operations": [
     {
       "id": "htp.get_provider_connection",
@@ -12,7 +12,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "connection metadata without credentials"
@@ -25,7 +26,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "website or binding configuration"
@@ -38,7 +40,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "stored audit summary page/trends"
@@ -51,7 +54,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "saved report preserving schema_version"
@@ -64,7 +68,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "website page with next_offset/has_more"
@@ -77,7 +82,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "stored dataset items with next_cursor/has_more and source coverage"
@@ -90,7 +96,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "stored commit page and collection status"
@@ -103,7 +110,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "connection metadata; saved history retained"
@@ -116,7 +124,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "indexed-version inspection result"
@@ -129,7 +138,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "website or binding configuration"
@@ -142,7 +152,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "website or binding configuration"
@@ -155,7 +166,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "deleted:true"
@@ -168,7 +180,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "website or binding configuration"
@@ -181,7 +194,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "HTP Business Profile feature flag",
       "notes": "website or binding configuration"
@@ -194,7 +208,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "latest report and sync metadata or pending; not crawl job completion"
@@ -207,7 +222,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "validated deduplicated import receipt"
@@ -220,7 +236,8 @@
       "backend": "present",
       "package": "htp-existing",
       "transport": "mcp",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": null,
       "notes": "repository binding and collection state"
@@ -233,7 +250,8 @@
       "backend": "present-private-primitive",
       "package": "not-implemented",
       "transport": "private-http",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "seosmith#18 adapter; htp#7 additionally for customer scheduling",
       "notes": "202 request_id; identity conflict is 409"
@@ -246,7 +264,8 @@
       "backend": "present-private-primitive",
       "package": "not-implemented",
       "transport": "private-http",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "seosmith#18 adapter; htp#7 additionally for customer scheduling",
       "notes": "stored job status or 404"
@@ -259,7 +278,8 @@
       "backend": "present-private-primitive",
       "package": "not-implemented",
       "transport": "private-http",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "seosmith#18 adapter; htp#7 additionally for customer scheduling",
       "notes": "202 accepted; 409 not cancellable; acceptance is not completion"
@@ -272,7 +292,8 @@
       "backend": "present-private-primitive",
       "package": "not-implemented",
       "transport": "private-http",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "seosmith#18 adapter; htp#7 additionally for customer scheduling",
       "notes": "original report JSON or 404; not-ready is not empty success"
@@ -285,6 +306,7 @@
       "backend": "gated",
       "package": "not-implemented",
       "transport": null,
+      "hostCapability": "unreachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "seosmith#18 adapter; htp#7 additionally for customer scheduling",
@@ -298,7 +320,8 @@
       "backend": "present-local-primitive",
       "package": "not-implemented",
       "transport": "cli",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "seosmith#18 for shared adapter",
       "notes": "JSON report"
@@ -311,7 +334,8 @@
       "backend": "present-local-primitive",
       "package": "not-implemented",
       "transport": "cli",
-      "hostSupport": "supported",
+      "hostCapability": "reachable",
+      "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "seosmith#18 for shared adapter",
       "notes": "JSON rules"
@@ -324,6 +348,7 @@
       "backend": "gated",
       "package": "not-implemented",
       "transport": null,
+      "hostCapability": "unreachable",
       "hostSupport": "gated",
       "adapter": "not-implemented",
       "gate": "seosmith#16; htp#8; htp#18",
