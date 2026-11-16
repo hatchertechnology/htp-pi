@@ -1,0 +1,35 @@
+{
+  "status": "merged",
+  "source": {
+    "repo": "hatchertechnology/htp",
+    "branch": "main",
+    "pullRequest": "https://github.com/hatchertechnology/htp/pull/36",
+    "commit": "3db3e439ec0adc99211d49358a7cb8a29507a940",
+    "canonicalRevision": "HTP PR #36 merged into main",
+    "note": "Final pin against the merged canonical commit. All five vendored artifacts are copied verbatim from that commit and their sha256 values are recorded below."
+  },
+  "contractVersion": "1.0.0",
+  "refreshedOn": "2026-11-16",
+  "files": [
+    {
+      "path": "v1/capabilities.json",
+      "sha256": "705661c59702ff1ace3ed7a86d09796c66b60149b561f07832f0d8e28f6499ab"
+    },
+    {
+      "path": "v1/conformance.json",
+      "sha256": "f083ad45141f1fe1b315d736d6e0f4783e826caae2398572ba58da9e03748c18"
+    },
+    {
+      "path": "v1/skills.lock.json",
+      "sha256": "241fbeffd1f9b36f82f7c90869d7ac70a8f3c40e04700b032acc0ed5386b3d83"
+    },
+    {
+      "path": "v1/hosts/pi.json",
+      "sha256": "7d385211913d668506fd899bd1ea195645bf66d69b5dad73864277685258c10c"
+    },
+    {
+      "path": "plugin-contract.mjs",
+      "sha256": "cad9798593f413961781b2188590c7f57cf785926b84d143daf173068eda4d08"
+    }
+  ]
+}
