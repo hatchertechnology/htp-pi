@@ -223,3 +223,16 @@ Full detail is in `contract/v1/operations.json`. Wave 0 status:
   copied verbatim from that merged commit and their sha256 recorded. The
   declared GitHub doc URLs may 404 (repo may be private); the installed package
   docs are authoritative (see `contract/v1/host.json` `provenance`).
+
+## Current provider 1.1 readiness
+
+The v1 projection and PR #36 pin above are historical 1.0.0 evidence. The
+separate `contract/provider-request-1.1.lock.json` pins the nine canonical
+artifacts from HTP PR #44 merge `e19875d0d6e74b5d990e45e456656c99dacc89d1`
+and requires backend PR #45 merge `48485a55773b1ca97e165a4715d343704270266e`.
+`node scripts/check-provider-request-readiness.mjs` verifies hashes, source skill
+parity and synthetic semantic traces; `--provider-results results.json` accepts
+Pi traces with measured contexts for all scenarios or synthetic contexts.
+Vendored-source parity does not establish installed skill parity, authentication,
+live host normalization, backend deployment, or lifecycle behavior. HTP and
+SEOsmith capability gates remain open; host issue #1 remains open.

@@ -76,8 +76,21 @@ contract shape — it is **not** Pi conformance evidence and not a live adapter
 test. Pass `--results` (size-capped at 1 MiB) once an adapter produces
 observations.
 
-Parity/limitations for Wave 0: no installable package, no adapter, no live HTP
+Historical v1 parity/limitations for Wave 0: no installable package, no adapter, no live HTP
 OAuth, and **no shared-skill parity check** on the Pi side (the skill lock is
 only vendored/hash-verified). The pin is **merged** against canonical HTP PR #36
 commit `3db3e43`; all five vendored artifacts were copied verbatim from it and
 their sha256 recorded.
+
+## Current provider 1.1 readiness
+
+The v1 projection and PR #36 pin above are historical 1.0.0 evidence. The
+separate `contract/provider-request-1.1.lock.json` pins the nine canonical
+artifacts from HTP PR #44 merge `e19875d0d6e74b5d990e45e456656c99dacc89d1`
+and requires backend PR #45 merge `48485a55773b1ca97e165a4715d343704270266e`.
+`node scripts/check-provider-request-readiness.mjs` verifies hashes, source skill
+parity and synthetic semantic traces; `--provider-results results.json` accepts
+Pi traces with measured contexts for all scenarios or synthetic contexts.
+Vendored-source parity does not establish installed skill parity, authentication,
+live host normalization, backend deployment, or lifecycle behavior. HTP and
+SEOsmith capability gates remain open; host issue #1 remains open.
