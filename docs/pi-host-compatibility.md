@@ -155,8 +155,8 @@ Pi's `bash` tool runs shell commands with session context variables
 An extension can also run a bounded child process with `pi.exec(argv)` without a
 shell. This is the host-supported way to reach a local SEOsmith CLI for
 standalone audits. Argument arrays and explicit paths avoid shell interpolation,
-matching the SEOsmith adapter requirement (seosmith #18). The adapter itself is
-**not** implemented in Wave 0.
+matching the SEOsmith adapter contract completed in seosmith #18. The Pi
+host adapter itself is **not** implemented.
 
 ## 8. Skills (supported)
 
@@ -209,7 +209,7 @@ Full detail is in `contract/v1/operations.json`. Wave 0 status:
 
 - htp-pi #1 remains **open**; no install/auth/operation acceptance criteria are
   satisfied by this Wave 0 change.
-- Live HTP OAuth sign-in from Pi, the SEOsmith operation adapter (seosmith #18),
+- Live HTP OAuth sign-in from Pi, the Pi SEOsmith host adapter and its live acceptance,
   and capability-gated updates are Wave 1+.
 - Canonical shared fixtures/descriptor schema are owned by HTP #34 (lead t11);
   the files here mirror that schema for the Pi host and must be reconciled if the
@@ -223,3 +223,17 @@ Full detail is in `contract/v1/operations.json`. Wave 0 status:
   copied verbatim from that merged commit and their sha256 recorded. The
   declared GitHub doc URLs may 404 (repo may be private); the installed package
   docs are authoritative (see `contract/v1/host.json` `provenance`).
+
+## Current provider 1.1 readiness
+
+The v1 projection and PR #36 pin above are historical 1.0.0 evidence. The
+separate `contract/provider-request-1.1.lock.json` pins the nine canonical
+artifacts from HTP PR #44 merge `e19875d0d6e74b5d990e45e456656c99dacc89d1`
+and requires backend PR #45 merge `48485a55773b1ca97e165a4715d343704270266e`.
+`node scripts/check-provider-request-readiness.mjs` verifies hashes, source skill
+parity and synthetic semantic traces; `--provider-results results.json` accepts
+Pi traces with measured contexts for all scenarios or synthetic contexts.
+Vendored-source parity does not establish installed skill parity, authentication,
+live host normalization, backend deployment, or lifecycle behavior. HTP and
+Pi SEOsmith host-adapter live acceptance remains open; SEOsmith #18 is
+fulfilled initial-adapter provenance. Host issue #1 remains open.

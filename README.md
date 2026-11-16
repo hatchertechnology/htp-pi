@@ -27,10 +27,18 @@ package, adapter, or skills. Host issue
 - [`scripts/probe-pi-capabilities.mjs`](scripts/probe-pi-capabilities.mjs) —
   installed-runtime capability probe.
 
+The separate [provider 1.1 readiness tree](contract/provider-request-1.1.lock.json)
+pins HTP PR #44 merge `e19875d0d6e74b5d990e45e456656c99dacc89d1`
+and backend PR #45 merge `48485a55773b1ca97e165a4715d343704270266e`.
+Its nine vendored files and semantic traces are checked offline. This establishes
+vendored-source parity only, not installed skills or live host behavior. HTP
+and Pi SEOsmith host-adapter live acceptance remain open. SEOsmith #18
+completed the initial adapter contract and is fulfilled provenance.
+
 ## Check
 
 ```sh
-npm test          # check-contract + check-host-results (self-test)
+npm test          # historical checks plus 1.1 readiness and negative tests
 npm run probe     # installed-runtime capability probe
 ```
 
@@ -38,8 +46,7 @@ npm run probe     # installed-runtime capability probe
 fixtures' expected values: it proves the Pi files carry the canonical contract
 shape, not that an adapter works. Pass `--results produced.json` for real
 adapter observations. The pin in `contract/vendor/plugin-contract/PIN.json` is
-**merged** against canonical HTP PR #36 (`3db3e43`), and the shared-skill parity
-check is not implemented on the Pi side.
+**merged** against canonical HTP PR #36 (`3db3e43`), and the historical v1 skill lock does not establish installed-skill parity.
 
 No network, no live adapter, no credentials.
 
@@ -54,3 +61,5 @@ Packaging, auth rollout and capability-gated updates are Wave 1+.
 ## License
 
 MIT
+
+For measured provider traces, run `node scripts/check-provider-request-readiness.mjs --provider-results results.json`. Every trace must include context; omitted context selects synthetic fixture context. Evidence provenance and live support require independent verification.
