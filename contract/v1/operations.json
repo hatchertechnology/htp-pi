@@ -2,7 +2,7 @@
   "host": "pi",
   "wave": 0,
   "adapterImplemented": false,
-  "notes": "Host-projected capability matrix for HTP and SEOsmith operations. This is not the canonical shared descriptor (HTP #34 / t11); it records what the Pi host can reach and the current adapter/gate state. Every adapter is 'not-implemented' in Wave 0.",
+  "notes": "HOST PROPOSALS: the `id` values are descriptive Pi-side aliases, not the canonical shared operation ids. `canonicalId` (SEOsmith) and `canonicalTool` (HTP MCP tool) carry the contract lead's exact mapping where supplied; null means pending the canonical file. This file is NOT the canonical shared descriptor (HTP #34 / t11) and will be aligned once that file lands. Every adapter is 'not-implemented' in Wave 0.",
   "operations": [
     {
       "id": "htp.website.list",
@@ -13,6 +13,8 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": "htp.list_websites",
+      "canonicalTool": "list_websites",
       "versionGate": null,
       "notes": "Discover websites in the signed-in account; reads stored state only."
     },
@@ -25,6 +27,8 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": "htp.website_saved_data",
+      "canonicalTool": "website_saved_data",
       "versionGate": null,
       "notes": "Must never create a collection job."
     },
@@ -37,6 +41,8 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": "htp.website_repository_history",
+      "canonicalTool": "website_repository_history",
       "versionGate": null,
       "notes": "Reads repository status/history only."
     },
@@ -49,8 +55,10 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": null,
+      "canonicalTool": null,
       "versionGate": null,
-      "notes": "Explicit user-intent writes; denied website access stays denied."
+      "notes": "Website CRUD tools; exact names pending canonical file. Explicit user-intent writes; denied website access stays denied."
     },
     {
       "id": "htp.provider.bindings.manage",
@@ -61,8 +69,10 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": null,
+      "canonicalTool": null,
       "versionGate": null,
-      "notes": "GA4/Business Profile bindings; interactive authorization steps stay in the host/HTP flow."
+      "notes": "GA4/Business Profile binding and provider connection status/disconnect tools; exact names pending canonical file. Interactive authorization steps stay in the host/HTP flow."
     },
     {
       "id": "htp.report.collect",
@@ -73,8 +83,10 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": "htp.request_website_report",
+      "canonicalTool": "request_website_report",
       "versionGate": null,
-      "notes": "Explicit, bounded collection request with durable request identity."
+      "notes": "Provider report collection, NOT durable crawl scheduling. No guaranteed idempotency: a retry may re-request collection. Do not claim durable request identity or idempotent collection for this tool."
     },
     {
       "id": "htp.seosmith.history.read",
@@ -85,8 +97,10 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": null,
+      "canonicalTool": "seosmith_history",
       "versionGate": null,
-      "notes": "Reads stored SEOsmith audits already imported into HTP."
+      "notes": "Reads stored Seosmith audits already imported into HTP. Tool name is a proposal; canonical file supplies exact name(s), including detail."
     },
     {
       "id": "htp.seosmith.import",
@@ -97,11 +111,13 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": null,
+      "canonicalTool": "seosmith_import",
       "versionGate": null,
-      "notes": "Imports a bounded report; preserves original bytes and provenance."
+      "notes": "Imports a bounded report; preserves original bytes and provenance. Tool name is a proposal."
     },
     {
-      "id": "htp.search.inspection.read",
+      "id": "htp.inspect_website_url.read",
       "service": "htp",
       "access": "read",
       "transport": "mcp",
@@ -109,8 +125,24 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": "htp.inspect_website_url",
+      "canonicalTool": "inspect_website_url",
+      "versionGate": null,
+      "notes": "Existing baseline URL inspection surface. Reads stored/queried state only; must not create a collection job. HTP #10 enrichments are separate (see htp.search.enrichment.read)."
+    },
+    {
+      "id": "htp.search.enrichment.read",
+      "service": "htp",
+      "access": "read",
+      "transport": "mcp",
+      "hostSupport": "supported",
+      "adapter": "not-implemented",
+      "authorization": "htp-oauth",
+      "htpDependent": true,
+      "canonicalId": null,
+      "canonicalTool": null,
       "versionGate": "htp#10",
-      "notes": "Gated until backend search/inspection analysis ships."
+      "notes": "HTP #10 search/inspection enrichments; separate from the baseline inspect_website_url surface. Gated until shipped."
     },
     {
       "id": "htp.evidence.lifecycle.read",
@@ -121,6 +153,8 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": null,
+      "canonicalTool": null,
       "versionGate": "htp#6,#8,#9,#20",
       "notes": "Gated evidence/lifecycle/remediation read surfaces."
     },
@@ -133,8 +167,10 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": null,
+      "canonicalTool": null,
       "versionGate": "htp#7",
-      "notes": "HTP-authorized scheduling; gated until orchestration ships."
+      "notes": "HTP-authorized scheduling; gated until orchestration ships. Distinct from htp.report.collect (provider collection)."
     },
     {
       "id": "htp.forms.manage",
@@ -145,6 +181,8 @@
       "adapter": "not-implemented",
       "authorization": "htp-oauth",
       "htpDependent": true,
+      "canonicalId": null,
+      "canonicalTool": null,
       "versionGate": "htp#1",
       "notes": "Gated forms track."
     },
@@ -157,6 +195,8 @@
       "adapter": "not-implemented",
       "authorization": "local-config",
       "htpDependent": false,
+      "canonicalId": "seosmith.start",
+      "canonicalTool": null,
       "versionGate": null,
       "notes": "Explicit bounded start via local/private adapter; immutable request identity; new run vs retry distinguished."
     },
@@ -169,6 +209,8 @@
       "adapter": "not-implemented",
       "authorization": "local-config",
       "htpDependent": false,
+      "canonicalId": "seosmith.status",
+      "canonicalTool": null,
       "versionGate": null,
       "notes": "queued/running/completed/failed/cancelled; preserves partial/unknown."
     },
@@ -181,8 +223,24 @@
       "adapter": "not-implemented",
       "authorization": "local-config",
       "htpDependent": false,
+      "canonicalId": "seosmith.cancel",
+      "canonicalTool": null,
       "versionGate": null,
       "notes": "Safe cancellation of an identified run."
+    },
+    {
+      "id": "seosmith.report.retrieve",
+      "service": "seosmith",
+      "access": "read",
+      "transport": "cli",
+      "hostSupport": "supported",
+      "adapter": "not-implemented",
+      "authorization": "local-config",
+      "htpDependent": false,
+      "canonicalId": "seosmith.report",
+      "canonicalTool": null,
+      "versionGate": null,
+      "notes": "Retained report retrieval with versions/coverage."
     },
     {
       "id": "seosmith.report.export",
@@ -193,8 +251,10 @@
       "adapter": "not-implemented",
       "authorization": "local-config",
       "htpDependent": false,
+      "canonicalId": "seosmith.export",
+      "canonicalTool": null,
       "versionGate": null,
-      "notes": "Retained report with versions/coverage; bounded and truncation-aware."
+      "notes": "Bounded export of a retained report; truncation-aware."
     },
     {
       "id": "seosmith.standalone.audit",
@@ -205,8 +265,24 @@
       "adapter": "not-implemented",
       "authorization": "none",
       "htpDependent": false,
+      "canonicalId": "seosmith.cli.crawl",
+      "canonicalTool": null,
       "versionGate": null,
-      "notes": "Runs without HTP credentials or connectivity; must not contact HTP."
+      "notes": "Local CLI crawl runs without HTP credentials or connectivity; must not contact HTP."
+    },
+    {
+      "id": "seosmith.cli.rules",
+      "service": "seosmith",
+      "access": "read",
+      "transport": "cli",
+      "hostSupport": "supported",
+      "adapter": "not-implemented",
+      "authorization": "none",
+      "htpDependent": false,
+      "canonicalId": "seosmith.cli.rules",
+      "canonicalTool": null,
+      "versionGate": null,
+      "notes": "Local CLI rule listing/selection; no HTP dependency."
     },
     {
       "id": "seosmith.private_worker.dispatch",
@@ -217,8 +293,10 @@
       "adapter": "not-implemented",
       "authorization": "local-config",
       "htpDependent": false,
+      "canonicalId": null,
+      "canonicalTool": null,
       "versionGate": "seosmith#18",
-      "notes": "Requires explicit private configuration; never a public crawler."
+      "notes": "Private-worker dispatch uses seosmith.start with explicit private configuration; requires network/auth safeguards and is never a public crawler."
     },
     {
       "id": "seosmith.ci.baseline",
@@ -229,6 +307,8 @@
       "adapter": "not-implemented",
       "authorization": "local-config",
       "htpDependent": false,
+      "canonicalId": "seosmith.ci.baseline",
+      "canonicalTool": null,
       "versionGate": "seosmith#16,htp#13",
       "notes": "Baseline-aware CI output; gated."
     },
@@ -241,6 +321,8 @@
       "adapter": "not-implemented",
       "authorization": "local-config",
       "htpDependent": false,
+      "canonicalId": null,
+      "canonicalTool": null,
       "versionGate": "seosmith#13",
       "notes": "Authorized staging profiles; gated."
     }

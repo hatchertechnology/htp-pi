@@ -27,14 +27,17 @@
   "sources": [
     "https://pi.dev",
     "https://www.npmjs.com/package/@earendil-works/pi-coding-agent",
-    "https://github.com/earendil-works/pi/blob/main/docs/mcp.md",
-    "https://github.com/earendil-works/pi/blob/main/docs/extensions.md",
-    "https://github.com/earendil-works/pi/blob/main/docs/packages.md",
-    "https://github.com/earendil-works/pi/blob/main/docs/skills.md",
-    "https://github.com/earendil-works/pi/blob/main/docs/cli.md",
-    "https://github.com/earendil-works/pi/blob/main/docs/security.md",
-    "https://github.com/earendil-works/pi/blob/main/docs/environment-variables.md"
+    "https://registry.npmjs.org/@earendil-works/pi-coding-agent/-/pi-coding-agent-1.5.2.tgz"
   ],
+  "provenance": {
+    "cliVersion": "1.5.2",
+    "package": "@earendil-works/pi-coding-agent",
+    "packageVersion": "1.5.2",
+    "releaseRoot": "/home/kwhatcher/.pi/agent/install/releases/1.5.2",
+    "docsDir": "/home/kwhatcher/.pi/agent/install/releases/1.5.2/node_modules/@earendil-works/pi-coding-agent/docs",
+    "docsUsed": ["mcp.md", "extensions.md", "packages.md", "skills.md", "cli.md", "security.md", "environment-variables.md"],
+    "note": "Pinned local package docs are authoritative; the declared GitHub repo earendil-works/pi may be private (doc URLs 404)."
+  },
   "gates": [
     "htp-pi#1 remains open; no adapter or installable package is implemented in Wave 0.",
     "HTP OAuth sign-in from Pi is unverified in Wave 0.",

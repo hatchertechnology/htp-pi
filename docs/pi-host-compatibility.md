@@ -175,7 +175,11 @@ Full detail is in `contract/v1/operations.json`. Wave 0 status:
   bounded `pi.exec`/`bash`.
 - **Supported host, adapter not implemented:** every HTP and SEOsmith operation.
   All are recorded with `adapter: "not-implemented"`.
-- **Gated (backend not yet delivered):** HTP search inspection (#10), evidence
+- **HTP baseline vs gated:** `inspect_website_url` is an existing baseline
+  surface (not gated); HTP #10 search/inspection *enrichments* are separate and
+  gated. `request_website_report` is provider report collection, **not** durable
+  crawl scheduling, and carries **no** idempotency guarantee.
+- **Gated (backend not yet delivered):** HTP #10 search enrichments, evidence
   lifecycle (#6/#8/#9/#20), orchestration (#7), forms (#1); SEOsmith
   private-worker dispatch, CI baselines (S16/H13), staging profiles (S13).
 - **Unsupported on Pi:** legacy SSE MCP transport; OpenAI/ChatGPT managed App
@@ -200,3 +204,8 @@ Full detail is in `contract/v1/operations.json`. Wave 0 status:
 - Canonical shared fixtures/descriptor schema are owned by HTP #34 (lead t11);
   the files here mirror that schema for the Pi host and must be reconciled if the
   canonical schema changes.
+- Operation ids in `contract/v1/operations.json` are **host proposals** with
+  `canonicalId`/`canonicalTool` mappings; they will be aligned when t11's shared
+  file lands. The declared GitHub doc URLs may 404 (repo may be private); the
+  pinned local package docs are authoritative (see
+  `contract/v1/host.json` `provenance`).

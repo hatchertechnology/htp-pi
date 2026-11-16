@@ -24,16 +24,28 @@ Canonical fields:
 - `distribution`: `{ source, install, upgrade, rollback }`.
 - `sources`: array of official `https://` URLs.
 - `gates`: array of blocking issue strings.
+- `provenance` (extra, Pi-local): pinned install path, package version and docs
+  used, because the declared GitHub repo may be private.
 
 ## operations.json (Pi projection)
 
 Each operation records `id`, `service` (`htp`|`seosmith`), `access`
 (`read`|`write`), `transport` (`mcp`|`cli`|`extension`), `hostSupport`,
-`adapter`, `authorization`, `htpDependent`, `versionGate`, `notes`.
+`adapter`, `authorization`, `htpDependent`, `canonicalId`, `canonicalTool`,
+`versionGate`, `notes`.
+
+**`id` values are host proposals**, not the canonical shared operation ids.
+`canonicalId` (SEOsmith) and `canonicalTool` (HTP MCP tool) carry the contract
+lead's exact mapping where supplied; `null` means pending the canonical file.
+They will be aligned once t11's shared file lands.
 
 `hostSupport` describes what the host can reach. `adapter` describes what this
 repository actually implements — `not-implemented` throughout Wave 0. A
-`versionGate` marks a backend feature that is not yet delivered.
+`versionGate` marks a backend feature that is not yet delivered. Note two
+corrections from the contract lead: `request_website_report` is **provider
+report collection, not durable crawl scheduling** and carries no idempotency
+guarantee; `inspect_website_url` is an existing baseline surface with HTP #10
+enrichments tracked separately.
 
 ## conformance.json
 

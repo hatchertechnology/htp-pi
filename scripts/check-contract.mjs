@@ -123,6 +123,12 @@ if (opsDoc) {
       if (!OP_TRANSPORTS.includes(op.transport)) fail(`operations.json: ${op.id} transport invalid`);
       if (!HOST_SUPPORT.includes(op.hostSupport)) fail(`operations.json: ${op.id} hostSupport invalid`);
       if (!ADAPTER.includes(op.adapter)) fail(`operations.json: ${op.id} adapter invalid`);
+      if (!("canonicalId" in op) || (op.canonicalId !== null && !isStr(op.canonicalId))) {
+        fail(`operations.json: ${op.id} canonicalId must be a string or null`);
+      }
+      if (!("canonicalTool" in op) || (op.canonicalTool !== null && !isStr(op.canonicalTool))) {
+        fail(`operations.json: ${op.id} canonicalTool must be a string or null`);
+      }
     }
   }
 }

@@ -15,7 +15,8 @@ package, adapter, or skills. Host issue
 - [`contract/v1/host.json`](contract/v1/host.json) — Pi host descriptor in the
   shared HTP #34 schema.
 - [`contract/v1/operations.json`](contract/v1/operations.json) — Pi capability
-  matrix for HTP and SEOsmith operations (all adapters `not-implemented`).
+  matrix for HTP and SEOsmith operations. Ids are host proposals with
+  `canonicalId`/`canonicalTool` mappings; all adapters `not-implemented`.
 - [`contract/v1/conformance.json`](contract/v1/conformance.json) — bounded
   fixtures covering HTP and SEOsmith.
 - [`scripts/check-contract.mjs`](scripts/check-contract.mjs) — offline validator.

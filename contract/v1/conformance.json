@@ -3,7 +3,8 @@
   "host": "pi",
   "kind": "fixture",
   "live": false,
-  "notes": "Bounded normalized contract observations for HTP and SEOsmith. Fixture-level expectations only; not proof of a live adapter or deployed backend. Canonical source is HTP #34 (t11); this is the Pi host projection and must be reconciled with the canonical file.",
+  "hostProposals": true,
+  "notes": "Bounded normalized contract observations for HTP and SEOsmith. Fixture-level expectations only; not proof of a live adapter or deployed backend. Operation ids are HOST PROPOSALS (see operations.json canonicalId/canonicalTool). Canonical source is HTP #34 (t11); align exact ids/fixtures once the shared file lands.",
   "statusEnum": ["ok", "denied", "unauthorized", "unavailable", "partial", "invalid", "error"],
   "requiredScenarios": [
     "htp.saved_reads.no_collection",
@@ -11,7 +12,8 @@
     "htp.auth.expired",
     "htp.cross_website.denied",
     "htp.partial_coverage",
-    "htp.report.collect.idempotent",
+    "htp.inspect_website_url.baseline",
+    "htp.report.request.provider_collection",
     "htp.missing_capability",
     "seosmith.start.bounded",
     "seosmith.status.states",
@@ -61,14 +63,25 @@
       "expected": { "status": "partial", "jobCreated": false, "dataSource": "stored", "coverage": "partial" }
     },
     {
-      "id": "htp.report.collect.idempotent",
+      "id": "htp.inspect_website_url.baseline",
+      "operation": "htp.inspect_website_url.read",
+      "context": { "auth": "valid", "tool": "inspect_website_url", "baseline": true },
+      "expected": { "status": "ok", "jobCreated": false, "surface": "inspect_website_url", "enrichments": false }
+    },
+    {
+      "id": "htp.report.request.provider_collection",
       "operation": "htp.report.collect",
-      "context": { "auth": "valid", "website": "www.example.com", "requestId": "req-1", "retry": true },
-      "expected": { "status": "ok", "durableRequestId": true, "idempotent": true }
+      "context": { "auth": "valid", "website": "www.example.com", "tool": "request_website_report" },
+      "expected": {
+        "status": "ok",
+        "collection": "provider",
+        "durableRequestId": false,
+        "idempotencyGuaranteed": false
+      }
     },
     {
       "id": "htp.missing_capability",
-      "operation": "htp.search.inspection.read",
+      "operation": "htp.search.enrichment.read",
       "context": { "auth": "valid", "backendVersion": "pre-htp#10" },
       "expected": { "status": "unavailable", "jobCreated": false, "capability": "htp#10" }
     },
@@ -101,6 +114,12 @@
       "expected": { "status": "ok", "cancelled": true, "durable": true }
     },
     {
+      "id": "seosmith.report.retrieve",
+      "operation": "seosmith.report.retrieve",
+      "context": { "runId": "run-1" },
+      "expected": { "status": "ok", "versions": true, "coverage": true }
+    },
+    {
       "id": "seosmith.report.export",
       "operation": "seosmith.report.export",
       "context": { "runId": "run-1", "format": "json" },
@@ -110,6 +129,12 @@
       "id": "seosmith.standalone.offline",
       "operation": "seosmith.standalone.audit",
       "context": { "htpAvailable": false, "scope": { "pages": 5 } },
+      "expected": { "status": "ok", "htpContacted": false, "mode": "standalone" }
+    },
+    {
+      "id": "seosmith.cli.rules",
+      "operation": "seosmith.cli.rules",
+      "context": { "htpAvailable": false },
       "expected": { "status": "ok", "htpContacted": false, "mode": "standalone" }
     },
     {
