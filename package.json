@@ -6,7 +6,9 @@
   "description": "Wave 0 host-compatibility documentation and bounded contract fixtures for the HTP Pi integration. Not an installable Pi package.",
   "license": "MIT",
   "scripts": {
-    "test": "node scripts/check-contract.mjs",
+    "test": "node scripts/check-contract.mjs && node scripts/check-host-results.mjs",
+    "check": "node scripts/check-contract.mjs",
+    "results": "node scripts/check-host-results.mjs",
     "probe": "node scripts/probe-pi-capabilities.mjs"
   }
 }

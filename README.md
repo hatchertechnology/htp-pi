@@ -12,22 +12,26 @@ package, adapter, or skills. Host issue
 
 - [`docs/pi-host-compatibility.md`](docs/pi-host-compatibility.md) — verified Pi
   1.5.2 extension/MCP/OAuth/CLI capabilities, limitations and gates.
-- [`contract/v1/host.json`](contract/v1/host.json) — Pi host descriptor in the
+- [`contract/v1/host.json`](contract/v1/host.json) — Pi host profile in the
   shared HTP #34 schema.
-- [`contract/v1/operations.json`](contract/v1/operations.json) — Pi capability
-  matrix for HTP and SEOsmith operations. Ids are host proposals with
-  `canonicalId`/`canonicalTool` mappings; all adapters `not-implemented`.
-- [`contract/v1/conformance.json`](contract/v1/conformance.json) — bounded
-  fixtures covering HTP and SEOsmith.
-- [`scripts/check-contract.mjs`](scripts/check-contract.mjs) — offline validator.
+- [`contract/v1/operations.json`](contract/v1/operations.json) — Pi projection
+  over the 25 canonical HTP and SEOsmith operations; all adapters
+  `not-implemented`.
+- [`contract/vendor/plugin-contract/`](contract/vendor/plugin-contract) —
+  **pinned** canonical capabilities, 31 normalized fixtures and the shared
+  validator, with sha256 hashes in `PIN.json`.
+- [`scripts/check-contract.mjs`](scripts/check-contract.mjs) — PIN, profile and
+  projection validator.
+- [`scripts/check-host-results.mjs`](scripts/check-host-results.mjs) — shared
+  normalized-observation check for host `pi`.
 - [`scripts/probe-pi-capabilities.mjs`](scripts/probe-pi-capabilities.mjs) —
   installed-runtime capability probe.
 
 ## Check
 
 ```sh
-node scripts/check-contract.mjs
-node scripts/probe-pi-capabilities.mjs
+npm test          # check-contract + check-host-results
+npm run probe     # installed-runtime capability probe
 ```
 
 No network, no live adapter, no credentials.

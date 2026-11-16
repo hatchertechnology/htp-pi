@@ -1,81 +1,58 @@
 # Plugin contract v1 — Pi projection (Wave 0)
 
-Bounded, offline contract files for the Pi host integration of HTP and SEOsmith.
-They mirror the canonical schema owned by
-[HTP #34](https://github.com/hatchertechnology/htp/issues/34) (lead t11).
-Nothing here runs a live adapter, calls a backend, or installs a package.
+Offline, bounded contract files for the Pi host integration of HTP and SEOsmith.
+The canonical fixtures, operations inventory and validator are **pinned** from
+HTP #34 (lead t11); this directory holds only the Pi host profile and its
+projection over the canonical operations. Nothing here runs a live adapter,
+calls a backend, or installs a package.
 
-## Files
+## Layout
 
-| File | Canonical? | Purpose |
+| Path | Kind | Purpose |
 | --- | --- | --- |
-| `host.json` | yes (schema) | Pi host descriptor: version, package status, transports, auth, distribution, sources, gates. |
-| `operations.json` | no (Pi projection) | Pi capability matrix for HTP and SEOsmith operations. Every `adapter` is `not-implemented` in Wave 0. |
-| `conformance.json` | yes (schema) | `contractVersion` `1.0.0`; bounded normalized observations for both services. |
+| `host.json` | Pi profile | Pi version, package status, transports, auth, distribution, sources, gates, `readiness`, `provenance`. |
+| `operations.json` | Pi projection | The 25 canonical operations copied verbatim (id/binding/effect/transport/backend/gate) with Pi `hostSupport` and `adapter: not-implemented`. |
+| `../vendor/plugin-contract/v1/capabilities.json` | pinned canonical | 25 exact canonical operations. |
+| `../vendor/plugin-contract/v1/conformance.json` | pinned canonical | `contractVersion 1.0.0`, 31 normalized scenarios. |
+| `../vendor/plugin-contract/v1/skills.lock.json` | pinned canonical | HTP shared-skill hashes. |
+| `../vendor/plugin-contract/plugin-contract.mjs` | pinned canonical | Shared offline validator (`validateResults`, `validateObservation`). |
+| `../vendor/plugin-contract/PIN.json` | pin record | Source worktree/commit and sha256 of every pinned file. |
 
 ## host.json
 
-Canonical fields:
+Canonical profile fields plus two local extras:
 
-- `host` (`"pi"`), `displayName`, `observedVersion`, `minimumVersion` (nullable).
-- `packageStatus`: `not-implemented` | `fixture-defined` | `implemented`.
-- `transports`: array of `stdio` and/or `streamable-http`. `sse` is rejected.
-- `auth`: `{ method: "host-oauth", login, logout, limitations[] }`.
-- `distribution`: `{ source, install, upgrade, rollback }`.
-- `sources`: array of official `https://` URLs.
-- `gates`: array of blocking issue strings.
-- `provenance` (extra, Pi-local): pinned install path, package version and docs
-  used, because the declared GitHub repo may be private.
+- Required: `host` (`"pi"`), `displayName`, `observedVersion`, `minimumVersion`
+  (must be `null`), `packageStatus`, `transports` (`stdio`/`streamable-http`;
+  `sse` rejected), `auth` (`method: "host-oauth"`, `login`, `logout`,
+  `limitations[]`), `distribution` (`source`/`install`/`upgrade`/`rollback`),
+  `sources` (https URLs), `gates[]`, `readiness` (`htp`, `seosmith`).
+- Local extras: `provenance` (pinned install path, package version, docs used)
+  and `readiness` (explicitly not yet satisfied).
 
 ## operations.json (Pi projection)
 
-Each operation records `id`, `service` (`htp`|`seosmith`), `access`
-(`read`|`write`), `transport` (`mcp`|`cli`|`extension`), `hostSupport`,
-`adapter`, `authorization`, `htpDependent`, `canonicalId`, `canonicalTool`,
-`versionGate`, `notes`.
+`id`, `binding`, `effect`, `backend`, `package`, `transport`, `gate` are copied
+from the pinned `capabilities.json` and must match it exactly. `hostSupport`
+(`supported` | `gated`) records whether Pi can reach the transport, and
+`adapter` is `not-implemented` throughout Wave 0. Two canonical facts matter:
 
-**`id` values are host proposals**, not the canonical shared operation ids.
-`canonicalId` (SEOsmith) and `canonicalTool` (HTP MCP tool) carry the contract
-lead's exact mapping where supplied; `null` means pending the canonical file.
-They will be aligned once t11's shared file lands.
+- `htp.request_website_report` is provider report collection, **not** durable
+  crawl scheduling; its scenario expects `source: "provider-collection"` and
+  `status: "pending"`.
+- `htp.inspect_website_url` is a present baseline tool (effect `write`); HTP #10
+  enrichments are separate/gated.
 
-`hostSupport` describes what the host can reach. `adapter` describes what this
-repository actually implements — `not-implemented` throughout Wave 0. A
-`versionGate` marks a backend feature that is not yet delivered. Note two
-corrections from the contract lead: `request_website_report` is **provider
-report collection, not durable crawl scheduling** and carries no idempotency
-guarantee; `inspect_website_url` is an existing baseline surface with HTP #10
-enrichments tracked separately.
-
-## conformance.json
-
-```json
-{
-  "contractVersion": "1.0.0",
-  "host": "pi",
-  "kind": "fixture",
-  "live": false,
-  "scenarios": [
-    { "id": "...", "operation": "...", "context": { ... }, "expected": { ... } }
-  ]
-}
-```
-
-Invariants enforced by `scripts/check-contract.mjs`:
-
-- `contractVersion` is `1.0.0`; `kind` is `fixture`; `live` is `false`.
-- Every scenario references an operation in `operations.json`.
-- `expected.status` is one of `ok`, `denied`, `unauthorized`, `unavailable`,
-  `partial`, `invalid`, `error`.
-- Every HTP `read` scenario asserts `jobCreated: false` (reads never start
-  collection).
-- A successful `seosmith.audit.start` asserts `bounded: true`.
-- All `requiredScenarios` are present and both `htp.` and `seosmith.` are
-  covered.
-
-## Validate
+## Checks
 
 ```sh
-node scripts/check-contract.mjs   # offline shape/coverage check
-node scripts/probe-pi-capabilities.mjs   # installed-runtime capability probe
+node scripts/check-contract.mjs      # PIN hashes + profile + projection vs canonical
+node scripts/check-host-results.mjs  # shared validateResults over the 31 scenarios
+node scripts/check-host-results.mjs --results produced.json
+node scripts/probe-pi-capabilities.mjs
 ```
+
+`check-host-results.mjs` without `--results` builds the Pi envelope from each
+scenario's documented `expected` value. That is a **profile projection**
+conformance run (it proves the Pi host files carry the canonical contract), not
+a live adapter test. Pass `--results` once an adapter produces observations.

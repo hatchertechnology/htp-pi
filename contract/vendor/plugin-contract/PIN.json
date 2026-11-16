@@ -1,0 +1,30 @@
+{
+  "source": {
+    "worktree": "/mnt/storage/projects/htp-wave0-plugin-contract",
+    "repo": "hatchertechnology/htp",
+    "branch": "wave0/plugin-contract",
+    "baseCommit": "82999d5",
+    "fileState": "canonical files were uncommitted in the source worktree at pin time; the HTP PR will commit them",
+    "pinnedBy": "t12 pi-plugin-contracts"
+  },
+  "contractVersion": "1.0.0",
+  "pinnedOn": "2026-11-16",
+  "files": [
+    {
+      "path": "v1/capabilities.json",
+      "sha256": "10ba77585c9bbf265dddfbbaf3cbff102a1768d338aa4af4111f1688f578bcb9"
+    },
+    {
+      "path": "v1/conformance.json",
+      "sha256": "7a5a77f68ab41203eb3d7ef54019c1b7ecba54b939f282a12b3b50ca5271d426"
+    },
+    {
+      "path": "v1/skills.lock.json",
+      "sha256": "241fbeffd1f9b36f82f7c90869d7ac70a8f3c40e04700b032acc0ed5386b3d83"
+    },
+    {
+      "path": "plugin-contract.mjs",
+      "sha256": "2bc5098ef646f13eca210d90eabbf55b5c4c3f833717d06adb2c158a8b97365d"
+    }
+  ]
+}

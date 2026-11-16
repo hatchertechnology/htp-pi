@@ -9,14 +9,17 @@ this is readiness evidence only.
 
 Companion machine-readable files:
 
-- [`../contract/v1/host.json`](../contract/v1/host.json) — Pi host descriptor
+- [`../contract/v1/host.json`](../contract/v1/host.json) — Pi host profile
   (shared HTP #34 schema).
 - [`../contract/v1/operations.json`](../contract/v1/operations.json) — Pi
-  capability matrix for HTP and SEOsmith operations.
-- [`../contract/v1/conformance.json`](../contract/v1/conformance.json) — bounded
-  contract fixtures covering HTP **and** SEOsmith operations.
-- [`../scripts/check-contract.mjs`](../scripts/check-contract.mjs) — executable
-  validator for both files (`node scripts/check-contract.mjs`).
+  projection over the 25 canonical HTP and SEOsmith operations.
+- [`../contract/vendor/plugin-contract/`](../contract/vendor/plugin-contract) —
+  **pinned** canonical capabilities, fixtures (31 scenarios) and validator, with
+  `PIN.json` sha256 hashes.
+- [`../scripts/check-contract.mjs`](../scripts/check-contract.mjs) — PIN hashes,
+  Pi profile and projection vs canonical.
+- [`../scripts/check-host-results.mjs`](../scripts/check-host-results.mjs) — runs
+  the shared `validateResults` for host `pi` (accepts `--results`).
 - [`../scripts/probe-pi-capabilities.mjs`](../scripts/probe-pi-capabilities.mjs)
   — re-runs the installed-runtime checks used below.
 
