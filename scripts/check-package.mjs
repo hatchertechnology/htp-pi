@@ -129,7 +129,7 @@ scanText("contract/wave1/operations.json");
 scanText("contract/wave1/overrides.json");
 
 // ---------- published docs ----------
-for (const rel of ["README.md", "docs/pi-host-compatibility.md", "docs/package.md"]) {
+for (const rel of ["README.md", "docs/pi-host-compatibility.md", "docs/package.md", "docs/oauth-verification.md"]) {
   if (existsSync(join(root, rel))) scanText(rel);
 }
 

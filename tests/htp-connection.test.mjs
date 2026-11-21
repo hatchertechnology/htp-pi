@@ -76,8 +76,34 @@ test("connectionStatus distinguishes signed-out, connected and stored-only state
     allTools: [],
     env: {
       HTP_PI_MCP_URL: url,
-      HTP_PI_MCP_AUTH_FILE: await authFile({ [`mcp__htp|${url}`]: { tokensExpireAt: 1 } }),
+      HTP_PI_MCP_AUTH_FILE: await authFile({ [`mcp__htp|${url}`]: { tokensExpireAt: Date.now() + 3_600_000 } }),
     },
   });
   assert.equal(storedOnly.state, "credentials_stored_server_not_connected");
+  assert.equal(storedOnly.expired, false);
+});
+
+test("connectionStatus surfaces credential expiry without claiming a failed read", async () => {
+  const url = "https://example.test/mcp";
+  const file = await authFile({ [`mcp__htp|${url}`]: { tokensExpireAt: 1 } });
+  const expired = await connectionStatus({
+    allTools: [],
+    env: { HTP_PI_MCP_URL: url, HTP_PI_MCP_AUTH_FILE: file },
+    now: Date.now(),
+  });
+  assert.equal(expired.state, "credentials_expired");
+  assert.equal(expired.expired, true);
+  assert.equal(expired.signedIn, true);
+});
+
+test("a connected server stays connected even when the stored access token expired", async () => {
+  const url = "https://example.test/mcp";
+  const file = await authFile({ [`mcp__htp|${url}`]: { tokensExpireAt: 1 } });
+  const connected = await connectionStatus({
+    allTools: [{ name: "mcp__htp__list_websites" }],
+    env: { HTP_PI_MCP_URL: url, HTP_PI_MCP_AUTH_FILE: file },
+    now: Date.now(),
+  });
+  assert.equal(connected.state, "connected");
+  assert.equal(connected.expired, true);
 });

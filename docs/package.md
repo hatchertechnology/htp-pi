@@ -66,6 +66,12 @@ supported operation without host smoke coverage.
 
 No credentials belong in the package, request files, argv or logs.
 
+`node scripts/check-htp-fail-closed.mjs` verifies the real endpoint rejects
+unauthenticated MCP access with an RFC 9728 protected-resource pointer and
+scope, without using any credential. The isolated sign-in/read/denied/reconnect/
+logout/expiry procedure is in
+[`docs/oauth-verification.md`](oauth-verification.md).
+
 ## Feature gates (stay explicit)
 
 Gated work is listed in `contract/wave1/operations.json` and returned by
@@ -76,7 +82,10 @@ Gated work is listed in `contract/wave1/operations.json` and returned by
 - Direct SEOsmith private-worker HTTP (explicit operator configuration).
 - SEOsmith staging profiles (S13) and baseline CI (S16).
 - Live HTP OAuth sign-in remains a release verification step (needs the
-  user's browser); the local SEOsmith path was additionally verified end to end
+  synthetic owner's browser; procedure in `docs/oauth-verification.md`); the
+  fail-closed transport baseline is verified by
+  `scripts/check-htp-fail-closed.mjs`. The local SEOsmith path was additionally
+  verified end to end
   against a locally built `seosmith` from `origin/main` with a bounded
   example.com crawl, and reported partial coverage truthfully. No crawl artifact
   or build output is committed.

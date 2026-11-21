@@ -66,13 +66,17 @@ export function mcpToolNames(allTools, serverName = HTP_SERVER_NAME) {
 }
 
 /** Summarize connection state for the capability/status tool. */
-export async function connectionStatus({ allTools, env = process.env } = {}) {
+export async function connectionStatus({ allTools, env = process.env, now = Date.now() } = {}) {
   const url = resolveHtpMcpUrl(env);
   const auth = await readAuthStatus({ url, file: authFilePath(env) });
   const tools = mcpToolNames(allTools);
   const connected = tools.length > 0;
+  // Pi refreshes access tokens automatically, so an expired access token is not
+  // the same as signed out. Surface it separately; never claim a failed read.
+  const expired = auth.signedIn && auth.expiresAt !== null && auth.expiresAt <= now;
   let state = "signed_out";
   if (auth.signedIn && connected) state = "connected";
+  else if (auth.signedIn && expired) state = "credentials_expired";
   else if (auth.signedIn && !connected) state = "credentials_stored_server_not_connected";
   else if (!auth.signedIn && connected) state = "connected_without_stored_credentials";
   return {
@@ -80,6 +84,7 @@ export async function connectionStatus({ allTools, env = process.env } = {}) {
     url,
     state,
     signedIn: auth.signedIn,
+    expired,
     expiresAt: auth.expiresAt,
     toolCount: tools.length,
     tools,
