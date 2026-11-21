@@ -156,7 +156,10 @@ export async function discover({ exec, binary, timeoutMs = CAPABILITY_TIMEOUT_MS
       `Unsupported SEOsmith adapter_version ${JSON.stringify(value?.adapter_version)}; expected ${ADAPTER_VERSION}.`,
     );
   }
-  return { ...value, binary: resolved, operations: value.operations ?? OPERATIONS };
+  const operations = Array.isArray(value.operations) && value.operations.every((id) => typeof id === "string")
+    ? value.operations
+    : [];
+  return { ...value, binary: resolved, operations };
 }
 
 /** Throw unless the discovered adapter advertises the requested operation. */
