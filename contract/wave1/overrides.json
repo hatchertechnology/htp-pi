@@ -1,0 +1,56 @@
+{
+  "contractVersion": "1.0.0",
+  "host": "pi",
+  "wave": 1,
+  "package": "htp-pi",
+  "packageVersion": "1.0.0",
+  "source": "contract/v1/operations.json (canonical field copy) + extensions/htp-pi/lib/capabilities.mjs",
+  "notes": "Wave 1 resolves the Wave 0 all-gated projection only for operations this package actually binds. HTP MCP tools are host-supported through the registered `htp` MCP server (adapter mcp-passthrough); the five SEOsmith lifecycle operations are host-supported through the local operations CLI (adapter local-cli). Feature-flagged and backend-gated work stays gated. A skill never makes an operation available.",
+  "overrides": {
+    "htp.get_provider_connection": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.get_website": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.website_audit_history": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.website_audit_detail": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.list_websites": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.website_saved_data": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.website_repository_history": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.disconnect_provider": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.inspect_website_url": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.create_website": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.update_website": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.delete_website": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.set_website_ga4_property": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.set_website_business_location": {
+      "adapter": "not-implemented",
+      "hostSupport": "gated",
+      "gate": "HTP Business Profile feature flag not enabled for this host build."
+    },
+    "htp.request_website_report": {
+      "adapter": "mcp-passthrough",
+      "hostSupport": "supported",
+      "gate": "Legacy provider report collection only. Durable request identity/reconciliation/cancellation (contract 1.1.0) requires deployed backend support and tool schema verification."
+    },
+    "htp.import_website_audit": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "htp.set_website_repository": { "adapter": "mcp-passthrough", "hostSupport": "supported" },
+    "seosmith.start": { "adapter": "local-cli", "hostSupport": "supported", "gate": null },
+    "seosmith.status": { "adapter": "local-cli", "hostSupport": "supported", "gate": null },
+    "seosmith.cancel": { "adapter": "local-cli", "hostSupport": "supported", "gate": null },
+    "seosmith.report": { "adapter": "local-cli", "hostSupport": "supported", "gate": null },
+    "seosmith.export": { "adapter": "local-cli", "hostSupport": "supported", "gate": null },
+    "seosmith.cli.crawl": {
+      "adapter": "not-implemented",
+      "hostSupport": "gated",
+      "gate": "Legacy crawl command is not used by the operations adapter; no host binding is advertised."
+    },
+    "seosmith.cli.rules": {
+      "adapter": "not-implemented",
+      "hostSupport": "gated",
+      "gate": "Legacy rules command is not used by the operations adapter; no host binding is advertised."
+    },
+    "seosmith.ci.baseline": {
+      "adapter": "not-implemented",
+      "hostSupport": "gated",
+      "gate": "Baseline-aware CI (S16) has not shipped."
+    }
+  }
+}
