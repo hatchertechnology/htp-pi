@@ -16,6 +16,7 @@
 // or returned evidence.
 
 import { access, constants, mkdtemp, stat, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import { isAbsolute, join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -94,8 +95,10 @@ function ensureAbsolute(label, value) {
   return value;
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 function ensureId(value) {
-  if (typeof value !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)) {
+  if (typeof value !== "string" || !UUID_RE.test(value)) {
     throw new AdapterError("invalid_argument", "id must be a non-nil UUID.");
   }
   return value;
@@ -194,15 +197,18 @@ export async function start({
   if (bytes.length > REQUEST_LIMIT) {
     throw new AdapterError("request_too_large", `Request JSON exceeds ${REQUEST_LIMIT} bytes.`);
   }
+  // Validate the identity before using it at all, and never derive the file
+  // path from caller input. A slash/`..`-bearing request_id previously escaped
+  // the private request directory; the opaque random filename removes that
+  // boundary break entirely. The CLI's idempotency is keyed on the request
+  // payload, not the file path, so an identical retry is safe with a new file.
+  if (typeof request.request_id !== "string" || !UUID_RE.test(request.request_id)) {
+    throw new AdapterError("invalid_request_id", "request_id must be a non-nil UUID.");
+  }
   await requireCapability({ exec, binary: resolved }, "seosmith.start");
   const dir = requestDir ?? (await makeRequestDir());
-  const requestPath = join(dir, `request-${request.request_id ?? "anonymous"}.json`);
-  await writeFile(requestPath, bytes, { mode: 0o600, flag: "wx" }).catch(async (err) => {
-    if (err?.code === "EEXIST") {
-      // Retrying the exact same request identity is allowed to reuse the file.
-      await writeFile(requestPath, bytes, { mode: 0o600 });
-      return;
-    }
+  const requestPath = join(dir, `${randomUUID()}.json`);
+  await writeFile(requestPath, bytes, { mode: 0o600, flag: "wx" }).catch((err) => {
     throw new AdapterError("request_write_failed", `Could not write request file: ${err.message}`, { cause: err });
   });
   const result = await run(exec, [...baseArgv(resolved, database), "start", "--request", requestPath], {

@@ -74,8 +74,9 @@ logout/expiry procedure is in
 
 ## Feature gates (stay explicit)
 
-Gated work is listed in `contract/wave1/operations.json` and returned by
-`htp_pi_capabilities`:
+Gated canonical operations are listed in `contract/wave1/operations.json`;
+`htp_pi_capabilities` returns those plus additional non-canonical
+backend/verification gates (a complementary runtime view):
 
 - HTP Business Profile writes (feature flag).
 - Durable provider requests, contract 1.1.0 (deployed backend + schema).

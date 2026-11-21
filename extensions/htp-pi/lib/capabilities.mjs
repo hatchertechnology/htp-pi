@@ -61,6 +61,14 @@ export const GATED_OPERATIONS = [
       "Durable provider request identity/reconciliation/cancellation (contract 1.1.0) requires deployed backend support and tool schema verification.",
   },
   {
+    id: "seosmith.cli.crawl",
+    reason: "Legacy crawl command is not used by the operations adapter; no host binding is advertised.",
+  },
+  {
+    id: "seosmith.cli.rules",
+    reason: "Legacy rules command is not used by the operations adapter; no host binding is advertised.",
+  },
+  {
     id: "seosmith.private_worker",
     reason:
       "Direct private-worker HTTP access requires explicit operator configuration and a protected endpoint; not configured by this package.",
@@ -92,7 +100,9 @@ export function capabilityReport({ seosmith = null, htp = null } = {}) {
     },
     seosmith: {
       adapter: "local-cli",
-      operations: SEOSMITH_LOCAL_OPERATIONS,
+      // Empty by default: never claim an operation the adapter did not
+      // advertise. Callers pass the discovered adapter's actual list.
+      operations: [],
       ...seosmith,
     },
     gated: GATED_OPERATIONS,

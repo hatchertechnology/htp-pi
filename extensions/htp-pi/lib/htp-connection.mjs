@@ -23,7 +23,10 @@ export function resolveHtpMcpUrl(env = process.env) {
 
 export function authFilePath(env = process.env) {
   if (env.HTP_PI_MCP_AUTH_FILE) return env.HTP_PI_MCP_AUTH_FILE;
-  const agentDir = env.PI_AGENT_DIR || join(homedir(), ".pi", "agent");
+  // Pi's agent directory is PI_CODING_AGENT_DIR (the SDK's agentDir and the
+  // variable the install-lifecycle check uses). Keep PI_AGENT_DIR as a
+  // compatibility fallback only.
+  const agentDir = env.PI_CODING_AGENT_DIR || env.PI_AGENT_DIR || join(homedir(), ".pi", "agent");
   return join(agentDir, "mcp-auth.json");
 }
 

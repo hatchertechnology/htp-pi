@@ -28,7 +28,6 @@ import {
   GATED_OPERATIONS,
   HTP_MCP_OPERATIONS,
   PACKAGE_VERSION,
-  SEOSMITH_LOCAL_OPERATIONS,
 } from "./lib/capabilities.mjs";
 import {
   connectionStatus,
@@ -107,8 +106,10 @@ export default function htpPiExtension(pi: any) {
           ok: true,
           available: true,
           ...caps,
-          advanced: { evidence_v2: false, authorized_staging: false, ci_baseline: false, ...(caps.advanced ?? {}) },
-          gated: GATED_OPERATIONS,
+          // Report the adapter's own advertisement verbatim; do not merge host
+          // defaults over it. Host-level gates stay separate and visible.
+          advanced: caps.advanced ?? { evidence_v2: false, authorized_staging: false, ci_baseline: false },
+          hostGates: GATED_OPERATIONS,
         };
       });
     },
@@ -201,7 +202,7 @@ export default function htpPiExtension(pi: any) {
     name: "seosmith_export",
     label: "Export SEOsmith report",
     description:
-      "Export the exact retained report bytes to a new absolute file and return the receipt (request id, byte count, sha256). Rejects existing paths and symlinks; a partial file is not a successful export.",
+      "Export the exact retained report bytes to a new absolute file and return the receipt (request id, byte count, sha256). The SEOsmith adapter rejects existing paths and symlinks; the host does not re-implement that check. A partial file is not a successful export without the receipt.",
     parameters: idParams({ output: Type.String({ description: "Absolute new destination path for the exported report." }) }),
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     async execute(_id: string, params: any) {
@@ -250,7 +251,8 @@ export default function htpPiExtension(pi: any) {
             rulesetVersion: caps.ruleset_version,
             limits: caps.limits,
             advanced: caps.advanced,
-            operations: SEOSMITH_LOCAL_OPERATIONS,
+            // Only the operations the adapter actually advertises.
+            operations: caps.operations ?? [],
           };
         } catch (err) {
           const adapter = err instanceof AdapterError;

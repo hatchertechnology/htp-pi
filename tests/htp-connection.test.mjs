@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import {
+  authFilePath,
   connectionStatus,
   mcpToolNames,
   readAuthStatus,
@@ -22,6 +23,16 @@ async function authFile(contents) {
 test("resolveHtpMcpUrl uses the env override or the documented default", () => {
   assert.equal(resolveHtpMcpUrl({}), DEFAULT_HTP_MCP_URL);
   assert.equal(resolveHtpMcpUrl({ HTP_PI_MCP_URL: "https://example.test/mcp" }), "https://example.test/mcp");
+});
+
+test("authFilePath honours PI_CODING_AGENT_DIR and the explicit override", () => {
+  assert.equal(authFilePath({ PI_CODING_AGENT_DIR: "/tmp/iso" }), "/tmp/iso/mcp-auth.json");
+  assert.equal(
+    authFilePath({ PI_CODING_AGENT_DIR: "/tmp/iso", HTP_PI_MCP_AUTH_FILE: "/tmp/explicit.json" }),
+    "/tmp/explicit.json",
+  );
+  // Compatibility fallback only.
+  assert.equal(authFilePath({ PI_AGENT_DIR: "/tmp/legacy" }), "/tmp/legacy/mcp-auth.json");
 });
 
 test("readAuthStatus never returns token material", async () => {

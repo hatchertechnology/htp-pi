@@ -45,12 +45,18 @@ function settingsPackages() {
 try {
   run(["install", root], "install");
   const installed = settingsPackages();
-  if (!installed.some((p) => typeof p === "string" && p.includes("w1-pi-host"))) {
-    errors.push(`install did not record the package: ${JSON.stringify(installed)}`);
+  // Pi records the resolved checkout path (relative to the settings file), not
+  // the package name, so assert against this checkout's own root. This keeps
+  // the check valid in any worktree/CI checkout.
+  const resolvedInstalled = installed
+    .filter((p) => typeof p === "string")
+    .map((p) => (p.startsWith("/") ? p : resolve(agentDir, p)));
+  if (!resolvedInstalled.includes(root)) {
+    errors.push(`install did not record this checkout (${root}): ${JSON.stringify(installed)}`);
   }
 
   const list = run(["list"], "list");
-  if (!/htp-pi|w1-pi-host/.test(list.stdout)) errors.push("list did not show the installed package");
+  if (!list.stdout.includes(root)) errors.push(`list did not show the installed checkout path (${root})`);
 
   run(["update", "--extensions"], "update");
 

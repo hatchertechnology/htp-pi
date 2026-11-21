@@ -48,11 +48,11 @@ Companion machine-readable files:
 
 ## Verification basis
 
-Verified 2026-11-16 against:
+Wave 0 verified 2026-11-16; Wave 1 re-verified 2026-11-21 on **Pi 1.6.0**.
 
 | Source | Detail |
 | --- | --- |
-| Installed runtime | `pi --version` → `1.5.2` |
+| Installed runtime | Wave 0: `pi --version` → `1.5.2`; Wave 1: → `1.6.0` |
 | Runtime help | `pi --help`, `pi mcp --help`, `pi auth --help`, `pi install --help` |
 | Official docs | `mcp.md`, `extensions.md`, `packages.md`, `skills.md`, `cli.md`, `security.md`, `environment-variables.md` from the installed `@earendil-works/pi-coding-agent` package |
 
@@ -67,10 +67,10 @@ an official source and local behavior could differ, the probe is the record.
 
 ## 1. Supported host version
 
-- Tested host: **Pi 1.5.2**.
+- Tested host: **Pi 1.6.0** (Wave 1; the Wave 0 record was 1.5.2).
 - No minimum version is asserted beyond the tested build. The mechanisms used
   here (MCP OAuth login, `pi mcp add --oauth-client-registration`, package
-  skills, the extension API) are present in 1.5.2. `host.json` records
+  skills, the extension API) are present in 1.6.0. `host.json` records
   `minimumVersion: null` deliberately rather than guessing an older floor.
 - Provider/model selection is host-owned; HTP/SEOsmith integrations must not
   assume a specific Pi model.

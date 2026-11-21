@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, stat, readFile } from "node:fs/promises";
+import { mkdtemp, stat, readFile, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -131,10 +131,60 @@ test("start writes a private request file and passes argv without a shell", asyn
     requestDir: dir,
   });
   assert.equal(result.state, "running");
-  const reqPath = join(dir, `request-${request.request_id}.json`);
+  const files = (await readdir(dir)).filter((f) => f.endsWith(".json"));
+  assert.equal(files.length, 1, "exactly one unique request file must be written");
+  const reqPath = join(dir, files[0]);
   const info = await stat(reqPath);
   assert.equal(info.mode & 0o777, 0o600);
   assert.deepEqual(JSON.parse(await readFile(reqPath, "utf8")), request);
+});
+
+test("an identical retry never overwrites the earlier request file", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "adapter-test-"));
+  const exec = makeExec({ capabilities: json(CAPS), start: json({ state: "running" }) });
+  const request = {
+    request_id: "b2a844c8-5bc9-49e5-bcf0-8fd1407d69f4",
+    website_id: "4822f25e-af3c-4c60-a8c6-31bd99d2acda",
+    url: "https://example.com/",
+    max_pages: 1,
+    max_resources: 0,
+    max_duration_seconds: 30,
+    delay_ms: 1000,
+    check_external_links: false,
+  };
+  await start({ exec, binary: BINARY, database: join(dir, "run.sqlite"), request, requestDir: dir });
+  await start({ exec, binary: BINARY, database: join(dir, "run.sqlite"), request, requestDir: dir });
+  const files = (await readdir(dir)).filter((f) => f.endsWith(".json"));
+  assert.equal(files.length, 2, "each start gets its own file; no overwrite");
+  for (const f of files) {
+    assert.deepEqual(JSON.parse(await readFile(join(dir, f), "utf8")), request);
+  }
+});
+
+test("a traversal-bearing request_id is rejected and writes nothing", async () => {
+  const dir = await mkdtemp(join(tmpdir(), "adapter-test-"));
+  const exec = makeExec({ capabilities: json(CAPS) });
+  await assert.rejects(
+    start({
+      exec,
+      binary: BINARY,
+      database: join(dir, "run.sqlite"),
+      request: {
+        request_id: "x/../../../owned",
+        website_id: "4822f25e-af3c-4c60-a8c6-31bd99d2acda",
+        url: "https://example.com/",
+        max_pages: 1,
+        max_resources: 0,
+        max_duration_seconds: 30,
+        delay_ms: 1000,
+        check_external_links: false,
+      },
+      requestDir: dir,
+    }),
+    (e) => e.code === "invalid_request_id",
+  );
+  assert.deepEqual(await readdir(dir), [], "no file may be written for an invalid identity");
+  assert.equal(exec.calls.length, 0, "no SEOsmith process should run");
 });
 
 test("start rejects an oversized request before invoking SEOsmith", async () => {

@@ -39,3 +39,22 @@ test("capabilityReport separates HTP MCP passthrough from SEOsmith local CLI", (
   assert.equal(report.package.name, "htp-pi");
   assert.equal(report.host.name, "pi");
 });
+
+test("capabilityReport never invents SEOsmith operations the adapter did not advertise", () => {
+  const report = capabilityReport({ seosmith: { available: true } });
+  assert.deepEqual(report.seosmith.operations, []);
+  const withOps = capabilityReport({ seosmith: { available: true, operations: ["seosmith.status"] } });
+  assert.deepEqual(withOps.seosmith.operations, ["seosmith.status"]);
+});
+
+test("GATED_OPERATIONS covers the canonical gated operations too", () => {
+  const ids = GATED_OPERATIONS.map((g) => g.id);
+  for (const id of [
+    "htp.set_website_business_location",
+    "seosmith.ci.baseline",
+    "seosmith.cli.crawl",
+    "seosmith.cli.rules",
+  ]) {
+    assert.ok(ids.includes(id), `${id} must stay gated`);
+  }
+});

@@ -66,7 +66,10 @@ semantics.
 truthful `adapter`/`hostSupport` state. HTP present MCP tools are
 `mcp-passthrough`; the five SEOsmith lifecycle operations are `local-cli`;
 feature-flagged and backend-gated work stays gated. `htp_pi_capabilities`
-returns the same map at runtime. A skill never makes an operation available.
+returns a complementary runtime view: the canonical gated operations plus
+additional non-canonical backend/verification gates (durable provider requests,
+private-worker HTTP, staging, evidence v2). A skill never makes an operation
+available.
 
 ## Check
 
