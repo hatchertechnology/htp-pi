@@ -1,0 +1,69 @@
+{
+  "host": "pi",
+  "displayName": "Pi",
+  "observedVersion": "1.6.0",
+  "minimumVersion": null,
+  "packageStatus": "implemented",
+  "transports": [
+    "streamable-http",
+    "stdio"
+  ],
+  "auth": {
+    "method": "host-oauth",
+    "login": "pi mcp login htp",
+    "logout": "pi mcp logout htp",
+    "reconnect": "/mcp reconnect htp",
+    "status": "htp_connection_status",
+    "limitations": [
+      "Legacy SSE MCP transport is rejected; streamable HTTP only.",
+      "MCP OAuth sign-in opens a browser; headless/SSH requires pasting the redirect URL.",
+      "Tokens are stored by Pi in ~/.pi/agent/mcp-auth.json, never in this package or its evidence.",
+      "Shell-level `pi mcp` commands do not load extensions; the extension registration is session-scoped and a file-configured `htp` entry takes precedence."
+    ]
+  },
+  "distribution": {
+    "source": "git:github.com/hatchertechnology/htp-pi",
+    "install": "pi install git:github.com/hatchertechnology/htp-pi",
+    "upgrade": "pi update git:github.com/hatchertechnology/htp-pi",
+    "rollback": "pi remove git:github.com/hatchertechnology/htp-pi, then install a pinned ref such as git:github.com/hatchertechnology/htp-pi@v1.0.0",
+    "local": "pi install ./htp-pi"
+  },
+  "sources": [
+    "https://pi.dev",
+    "https://www.npmjs.com/package/@earendil-works/pi-coding-agent",
+    "https://github.com/hatchertechnology/htp-pi"
+  ],
+  "provenance": {
+    "cliVersion": "1.6.0",
+    "package": "@earendil-works/pi-coding-agent",
+    "packageVersion": "1.6.0",
+    "docsUsed": [
+      "extensions.md",
+      "packages.md",
+      "skills.md",
+      "mcp.md",
+      "cli.md",
+      "security.md",
+      "environment-variables.md"
+    ],
+    "note": "Installed-runtime docs for the tested Pi build are authoritative; declared repository docs may be private."
+  },
+  "readiness": {
+    "htp": "extension registers the htp MCP server and reports connection/auth state; live HTP OAuth sign-in requires the user's browser and is a release verification step",
+    "seosmith": "local operations adapter implemented and exercised through the Pi runtime with a controlled fixture, and verified end-to-end against a locally built SEOsmith origin/main binary (bounded example.com crawl, partial coverage reported truthfully). No build artifact is committed."
+  },
+  "skills": [
+    "htp-connection",
+    "seo-review",
+    "website-management",
+    "repository-settings",
+    "seosmith-operations"
+  ],
+  "gates": [
+    "HTP Business Profile writes require the HTP feature flag.",
+    "Durable provider requests (contract 1.1.0) require deployed backend support and tool schema verification.",
+    "Direct SEOsmith private-worker HTTP access requires explicit operator configuration.",
+    "SEOsmith staging profiles (S13) and baseline CI (S16) have not shipped.",
+    "Live HTP OAuth sign-in and a live crawl with a real SEOsmith build are release verification steps, not satisfied by fixture tests alone."
+  ]
+}

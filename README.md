@@ -1,84 +1,98 @@
 # htp-pi
 
-HTP plugin for the [Pi](https://pi.dev) coding agent harness.
+Pi package for **HTP** and **SEOsmith** operations.
 
-**Wave 0 status:** host-compatibility documentation and bounded contract
-fixtures only. This repository does **not** yet contain an installable Pi
-package, adapter, or skills. Host issue
-[htp-pi #1](https://github.com/hatchertechnology/htp-pi/issues/1) remains
-**open**; no install/auth/operation acceptance criteria are satisfied here.
+This branch implements the Wave 1 host package for
+[htp-pi #1](https://github.com/hatchertechnology/htp-pi/issues/1): an installable
+Pi package with an HTP MCP binding and a standalone SEOsmith local-operations
+binding. It keeps the pinned Wave 0 contract evidence under `contract/v1` and
+adds the Wave 1 binding state under `contract/wave1`.
 
-## Contents
+## Install
 
+```sh
+pi install ./htp-pi                                   # local checkout
+pi install git:github.com/hatchertechnology/htp-pi    # git
+pi list
+pi update --extensions
+pi remove git:github.com/hatchertechnology/htp-pi
+```
+
+Tested against Pi 1.6.0. See [`docs/package.md`](docs/package.md) for
+distribution, upgrade/rollback, configuration and skill synchronization.
+
+## What ships
+
+- [`extensions/htp-pi/index.ts`](extensions/htp-pi/index.ts) — registers the
+  `htp` streamable-HTTP MCP server and the SEOsmith local operations tools.
+- [`extensions/htp-pi/lib/`](extensions/htp-pi/lib) — the pure, testable
+  adapter, capability and connection modules.
+- [`skills/`](skills) — `htp-connection`, `seo-review`, `website-management`,
+  `repository-settings` and `seosmith-operations`.
+- [`contract/wave1/`](contract/wave1) — the Wave 1 host profile, resolved
+  operation bindings and overrides.
 - [`docs/pi-host-compatibility.md`](docs/pi-host-compatibility.md) — verified Pi
-  1.5.2 extension/MCP/OAuth/CLI capabilities, limitations and gates.
-- [`contract/v1/host.json`](contract/v1/host.json) — Pi host profile in the
-  shared HTP #34 schema.
-- [`contract/v1/operations.json`](contract/v1/operations.json) — Pi projection
-  over the 25 canonical HTP and SEOsmith operations; all adapters
-  `not-implemented`.
-- [`contract/vendor/plugin-contract/`](contract/vendor/plugin-contract) —
-  **pinned** canonical capabilities, 38 normalized fixtures, canonical Pi
-  profile and the shared validator, with sha256 hashes in `PIN.json`.
-- [`scripts/check-contract.mjs`](scripts/check-contract.mjs) — PIN, profile and
-  projection validator.
-- [`scripts/check-host-results.mjs`](scripts/check-host-results.mjs) — shared
-  normalized-observation check for host `pi`.
-- [`scripts/probe-pi-capabilities.mjs`](scripts/probe-pi-capabilities.mjs) —
-  installed-runtime capability probe.
-- [`contract/audit-export-1.2/`](contract/audit-export-1.2) with
-  [`contract/audit-export-1.2.lock.json`](contract/audit-export-1.2.lock.json) —
-  **pinned** canonical audit export-v1 profile, conformance scenarios,
-  semantic validator and the four current shared skill/reference files, with a
-  sha256 lock and a Pi host wrapper/negative-test suite.
-- [`scripts/check-audit-export-readiness.mjs`](scripts/check-audit-export-readiness.mjs)
-  — Pi audit export 1.2 pin/hash, source-skill parity and semantic checks.
+  extension/MCP/OAuth/CLI capabilities, limitations and gates.
 
-The separate [provider 1.1 readiness tree](contract/provider-request-1.1.lock.json)
-pins HTP PR #44 merge `e19875d0d6e74b5d990e45e456656c99dacc89d1`
-and backend PR #45 merge `48485a55773b1ca97e165a4715d343704270266e`.
-Its nine vendored files and semantic traces are checked offline. This establishes
-vendored-source parity only, not installed skills or live host behavior. HTP
-and Pi SEOsmith host-adapter live acceptance remain open. SEOsmith #18
-completed the initial adapter contract and is fulfilled provenance.
+## HTP binding
 
-The separate [audit export 1.2 readiness tree](contract/audit-export-1.2.lock.json)
-pins HTP PR #48 merge `6c065c8327970b0773ba90f163f99a6e56e1e204`, which defines
-the versioned audit export-v1 profile (`1.2.0`). Its twelve vendored canonical
-artifacts (profile, conformance, source lock, semantic validator/fixtures,
-standalone checker and four shared skill/reference files) are hash-checked, and
-`--export-results` accepts Pi host observations with synthetic or measured
-labels. Backend export deployment, endpoint/cgroup acceptance, host packaging,
-OAuth and runtime behavior are **not** established here. This supersedes no
-historical v1 or 1.1 pin.
+The extension registers the HTP MCP endpoint; Pi's built-in MCP support
+discovers the canonical `mcp__htp__*` tools and owns OAuth 2.1 + PKCE:
+
+- Sign in: `pi mcp login htp`
+- Reconnect: `/mcp reconnect htp`
+- Sign out: `pi mcp logout htp`
+- Inspect: `/mcp`, `pi mcp list`, or the `htp_connection_status` tool
+
+Tokens stay in Pi's credential store; the package never reads, prints or
+forwards them. Denied access stays denied.
+
+## SEOsmith binding
+
+The extension binds the SEOsmith #18 local `operations` CLI through `pi.exec`
+argv arrays (no shell). Standalone use needs no HTP account:
+
+- `seosmith_capabilities` — discover and verify `adapter_version == 1`
+- `seosmith_start` / `seosmith_status` / `seosmith_cancel`
+- `seosmith_report` / `seosmith_export`
+
+Set `HTP_PI_SEOSMITH_BIN` (or `SEOSMITH_BIN`) to a trusted absolute executable.
+See the `seosmith-operations` skill for bounds, retries, cancellation and export
+semantics.
+
+## Capability gates
+
+`contract/wave1/operations.json` records all 25 canonical operations with a
+truthful `adapter`/`hostSupport` state. HTP present MCP tools are
+`mcp-passthrough`; the five SEOsmith lifecycle operations are `local-cli`;
+feature-flagged and backend-gated work stays gated. `htp_pi_capabilities`
+returns the same map at runtime. A skill never makes an operation available.
 
 ## Check
 
 ```sh
-npm test          # historical checks plus 1.1/1.2 readiness and negative tests
+npm test          # contract, package, unit and real-host smoke checks
+npm run check     # offline contract/package checks
+npm run smoke     # real Pi runtime + install lifecycle
 npm run probe     # installed-runtime capability probe
 ```
 
-`check-host-results` without `--results` is a **self-test** of the pinned
-fixtures' expected values: it proves the Pi files carry the canonical contract
-shape, not that an adapter works. Pass `--results produced.json` for real
-adapter observations. The pin in `contract/vendor/plugin-contract/PIN.json` is
-**merged** against canonical HTP PR #36 (`3db3e43`), and the historical v1 skill lock does not establish installed-skill parity.
+- `scripts/host-smoke.mjs` loads the extension with the **installed Pi runtime**
+  (jiti + the real `ExtensionAPI`) and invokes every advertised SEOsmith
+  operation through a controlled fixture binary using the host's `pi.exec`
+  primitive. It also verifies the `htp` MCP server registration.
+- `scripts/check-install-lifecycle.mjs` runs install/list/update/remove against
+  the real CLI in an isolated `PI_CODING_AGENT_DIR`.
+- `scripts/check-host-results.mjs` without `--results` remains a **self-test**
+  of the pinned canonical fixtures, not live conformance evidence.
 
-No network, no live adapter, no credentials.
+## Historical Wave 0 evidence
 
-## Scope
-
-Canonical shared contract and fixtures are owned by
-[HTP #34](https://github.com/hatchertechnology/htp/issues/34). SEOsmith bounded
-operations are defined by
-[seosmith #18](https://github.com/hatchertechnology/seosmith/issues/18).
-Packaging, auth rollout and capability-gated updates are Wave 1+.
+The `contract/v1` projection, the provider 1.1 and audit export 1.2 trees, and
+their pins remain unchanged. They are historical offline evidence: no network,
+no live adapter. The Wave 1 binding above supersedes their
+`adapter: not-implemented` state only for operations the package actually binds.
 
 ## License
 
 MIT
-
-For measured provider traces, run `node scripts/check-provider-request-readiness.mjs --provider-results results.json`. Every trace must include context; omitted context selects synthetic fixture context. Evidence provenance and live support require independent verification.
-
-For measured audit export traces, run `node scripts/check-audit-export-readiness.mjs --export-results results.json`. Results must target host `pi`; all 19 scenarios or synthetic fixture context are required. Evidence provenance, side effects and live export support remain independent acceptance obligations.

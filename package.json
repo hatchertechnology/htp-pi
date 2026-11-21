@@ -1,13 +1,42 @@
 {
-  "name": "htp-pi-contract",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "description": "Wave 0 host-compatibility documentation and bounded contract fixtures for the HTP Pi integration. Not an installable Pi package.",
+  "name": "htp-pi",
+  "version": "1.0.0",
+  "description": "Pi package for HTP and SEOsmith operations: HTP MCP connection, saved-evidence skills, and the SEOsmith local operations adapter.",
   "license": "MIT",
+  "type": "module",
+  "keywords": [
+    "pi-package",
+    "htp",
+    "seosmith",
+    "seo"
+  ],
+  "files": [
+    "extensions",
+    "skills",
+    "docs",
+    "contract",
+    "scripts",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions/htp-pi/index.ts"
+    ],
+    "skills": [
+      "./skills"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "typebox": "*"
+  },
   "scripts": {
-    "test": "node scripts/check-contract.mjs && node scripts/check-host-results.mjs && node scripts/check-provider-request-readiness.mjs && node --test scripts/check-provider-request-readiness.test.mjs && node scripts/check-audit-export-readiness.mjs && node --test scripts/check-audit-export-readiness.test.mjs",
-    "check": "node scripts/check-contract.mjs && node scripts/check-provider-request-readiness.mjs && node scripts/check-audit-export-readiness.mjs",
+    "test": "node scripts/check-contract.mjs && node scripts/check-host-results.mjs && node scripts/check-wave1-contract.mjs && node scripts/check-package.mjs && node scripts/check-provider-request-readiness.mjs && node --test scripts/check-provider-request-readiness.test.mjs && node scripts/check-audit-export-readiness.mjs && node --test scripts/check-audit-export-readiness.test.mjs && node --test tests/*.test.mjs && node scripts/host-smoke.mjs",
+    "smoke": "node scripts/host-smoke.mjs && node scripts/check-install-lifecycle.mjs",
+    "smoke:live": "node scripts/live-seosmith-smoke.mjs",
+    "check": "node scripts/check-contract.mjs && node scripts/check-wave1-contract.mjs && node scripts/check-package.mjs && node scripts/check-provider-request-readiness.mjs && node scripts/check-audit-export-readiness.mjs",
     "results": "node scripts/check-host-results.mjs",
     "probe": "node scripts/probe-pi-capabilities.mjs"
   }

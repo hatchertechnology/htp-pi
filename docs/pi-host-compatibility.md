@@ -1,11 +1,34 @@
 # Pi host compatibility
 
-Wave 0 host-compatibility documentation for the Pi integration of HTP and
-SEOsmith. This document records **what the Pi host actually supports**, not
-what the plugin will eventually ship. No adapter, package, skill or transport
-binding for HTP/SEOsmith is implemented here. Host issue
-[htp-pi #1](https://github.com/hatchertechnology/htp-pi/issues/1) remains open;
-this is readiness evidence only.
+Host-compatibility documentation for the Pi integration of HTP and SEOsmith.
+This document records **what the Pi host actually supports**. The historical
+Wave 0 sections below are readiness evidence; the Wave 1 package implements the
+HTP MCP binding and the SEOsmith local-operations binding. Host issue
+[htp-pi #1](https://github.com/hatchertechnology/htp-pi/issues/1) remains open
+until its full scope and release verification are satisfied.
+
+## Wave 1 host package (implemented)
+
+Tested host: **Pi 1.6.0** (`pi --version`). The installable package adds:
+
+- `extensions/htp-pi/index.ts` — registers the `htp` streamable-HTTP MCP server
+  (`pi.registerMcpServer`) and eight tools via `pi.registerTool`.
+- SEOsmith local operations bound through `pi.exec` argv arrays (no shell):
+  `seosmith_capabilities`, `seosmith_start`, `seosmith_status`,
+  `seosmith_cancel`, `seosmith_report`, `seosmith_export`.
+- HTP status tools: `htp_connection_status`, `htp_pi_capabilities`.
+- Five skills under `skills/`, listed in `contract/wave1/host.json`.
+
+Real-host verification (`node scripts/host-smoke.mjs`) loads the extension with
+the installed Pi runtime and invokes every advertised SEOsmith operation through
+a controlled fixture binary, checks the `pi.exec` no-shell boundary, and
+confirms the `htp` MCP registration. `node scripts/check-install-lifecycle.mjs`
+verifies install/list/update/remove with the real CLI in an isolated agent dir.
+
+Truthful capability state lives in `contract/wave1/operations.json` and is
+returned by `htp_pi_capabilities`. Feature-flagged and backend-gated work stays
+gated. Live HTP OAuth sign-in and a real SEOsmith crawl remain release
+verification steps, not claims made here.
 
 Companion machine-readable files:
 
