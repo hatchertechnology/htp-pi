@@ -237,3 +237,28 @@ Vendored-source parity does not establish installed skill parity, authentication
 live host normalization, backend deployment, or lifecycle behavior. HTP and
 Pi SEOsmith host-adapter live acceptance remains open; SEOsmith #18 is
 fulfilled initial-adapter provenance. Host issue #1 remains open.
+
+## Current audit export 1.2 readiness
+
+The v1 projection, provider 1.1 tree and their pins above are historical
+evidence. The separate `contract/audit-export-1.2.lock.json` pins twelve
+canonical artifacts from HTP PR #48 merge
+`6c065c8327970b0773ba90f163f99a6e56e1e204`. Profile `1.2.0` adds the versioned
+audit export-v1 workflow: small `website_audit_detail` calls are unchanged,
+while unsafe large inline materialization returns `EXPORT_REQUIRED` and must use
+`website_audit_export_start_v1`/`_chunk_v1`/`_close_v1`. The vendored tree
+includes the profile README, `audit-exports.json`, `conformance.json`, the
+source lock, the semantic validator and fixture helper, the standalone canonical
+checker, the `plugin-contract.mjs` reader dependency, and the four current shared
+skill/reference files.
+
+`node scripts/check-audit-export-readiness.mjs` verifies the pin, the twelve
+hashes, source-skill parity and all 19 synthetic semantic scenarios with host
+`pi`; `--export-results results.json` accepts Pi traces with measured contexts or
+synthetic contexts and labels which was supplied. Vendored-source parity does
+not establish installed skill parity, authentication, live host normalization,
+backend deployment, endpoint behavior, the 256MiB cgroup/aggregate storage
+limits or instance routing. The canonical `audit-exports.json` still records
+`backendExportRevision: null`; backend exact-source acceptance, deployment and
+schema rediscovery, host packaging/OAuth/runtime and HTP #34 remain open. Host
+issue #1 remains open.
