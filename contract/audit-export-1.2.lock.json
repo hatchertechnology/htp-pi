@@ -1,0 +1,28 @@
+{
+  "contractVersion": "1.2.0",
+  "canonicalCommit": "6c065c8327970b0773ba90f163f99a6e56e1e204",
+  "sourcePR": 48,
+  "backendBase": "a80b7e52669dce558ee7468a9d54453b8267f7a6",
+  "backendExportRevision": null,
+  "activationGates": [
+    "htp#34",
+    "audit-export-backend-accepted-and-deployed",
+    "deployed-audit-export-schemas-rediscovered",
+    "host-package-wave1",
+    "host-oauth-live-acceptance"
+  ],
+  "files": {
+    "docs/plugin-contract/v1.2/README.md": "e91fafb767dc672450027ad493bfadf729f28685d8dc33fbfb650de9cdf555f1",
+    "docs/plugin-contract/v1.2/audit-exports.json": "0efd1c0a8b3684cc35738a218e3745acb3a84dcefe281239fe7c4c5c5d576fb5",
+    "docs/plugin-contract/v1.2/conformance.json": "d589bac111e1010f68da6c9cc8ee403e1939386e1b8e35831916f37ad4051ffe",
+    "docs/plugin-contract/v1.2/skills.lock.json": "529ccd4c283dad438b4e88be6d925717ab2ca7c8a30d3258e313b585bddd43ec",
+    "plugins/htp/skills/repository-settings/SKILL.md": "cc7e9296146794082ebc28057040b334885da3c3a4a6b1e37e541e50fff0705d",
+    "plugins/htp/skills/seo-review/SKILL.md": "6de51cb9af003acc47113f66a99029dd9dd005fae764f58301e7196fe28913bb",
+    "plugins/htp/skills/seo-review/references/data.md": "b2dc920820cef70f06843421e40470bcd31d68e15334db9e5a4141d7287c5492",
+    "plugins/htp/skills/website-management/SKILL.md": "74883c11c79fe126eb87f504bc9fdbe3d815ec786bfcbe05be51e2121de67353",
+    "scripts/audit-export-contract.mjs": "0b354d5df8d1ce56a46fa6b9d0e41d36bfe15716930eb1ebf22ab41bfb3e09b3",
+    "scripts/audit-export-fixtures.mjs": "0f5437922e354d64996d340e1d1030cc864e71744fb00e65982e9bae8eae146a",
+    "scripts/check-audit-export-contract.mjs": "02513f9663a763d35768bb26a3654760d354ab6c541fc84d8c361038a41eee81",
+    "scripts/plugin-contract.mjs": "cad9798593f413961781b2188590c7f57cf785926b84d143daf173068eda4d08"
+  }
+}

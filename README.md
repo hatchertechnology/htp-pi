@@ -26,6 +26,13 @@ package, adapter, or skills. Host issue
   normalized-observation check for host `pi`.
 - [`scripts/probe-pi-capabilities.mjs`](scripts/probe-pi-capabilities.mjs) —
   installed-runtime capability probe.
+- [`contract/audit-export-1.2/`](contract/audit-export-1.2) with
+  [`contract/audit-export-1.2.lock.json`](contract/audit-export-1.2.lock.json) —
+  **pinned** canonical audit export-v1 profile, conformance scenarios,
+  semantic validator and the four current shared skill/reference files, with a
+  sha256 lock and a Pi host wrapper/negative-test suite.
+- [`scripts/check-audit-export-readiness.mjs`](scripts/check-audit-export-readiness.mjs)
+  — Pi audit export 1.2 pin/hash, source-skill parity and semantic checks.
 
 The separate [provider 1.1 readiness tree](contract/provider-request-1.1.lock.json)
 pins HTP PR #44 merge `e19875d0d6e74b5d990e45e456656c99dacc89d1`
@@ -35,10 +42,20 @@ vendored-source parity only, not installed skills or live host behavior. HTP
 and Pi SEOsmith host-adapter live acceptance remain open. SEOsmith #18
 completed the initial adapter contract and is fulfilled provenance.
 
+The separate [audit export 1.2 readiness tree](contract/audit-export-1.2.lock.json)
+pins HTP PR #48 merge `6c065c8327970b0773ba90f163f99a6e56e1e204`, which defines
+the versioned audit export-v1 profile (`1.2.0`). Its twelve vendored canonical
+artifacts (profile, conformance, source lock, semantic validator/fixtures,
+standalone checker and four shared skill/reference files) are hash-checked, and
+`--export-results` accepts Pi host observations with synthetic or measured
+labels. Backend export deployment, endpoint/cgroup acceptance, host packaging,
+OAuth and runtime behavior are **not** established here. This supersedes no
+historical v1 or 1.1 pin.
+
 ## Check
 
 ```sh
-npm test          # historical checks plus 1.1 readiness and negative tests
+npm test          # historical checks plus 1.1/1.2 readiness and negative tests
 npm run probe     # installed-runtime capability probe
 ```
 
@@ -63,3 +80,5 @@ Packaging, auth rollout and capability-gated updates are Wave 1+.
 MIT
 
 For measured provider traces, run `node scripts/check-provider-request-readiness.mjs --provider-results results.json`. Every trace must include context; omitted context selects synthetic fixture context. Evidence provenance and live support require independent verification.
+
+For measured audit export traces, run `node scripts/check-audit-export-readiness.mjs --export-results results.json`. Results must target host `pi`; all 19 scenarios or synthetic fixture context are required. Evidence provenance, side effects and live export support remain independent acceptance obligations.
