@@ -11,6 +11,8 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
+import { rollbackExampleErrors } from "./rollback-pin.mjs";
+
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 const errors = [];
@@ -123,6 +125,23 @@ for (const key of ["install", "upgrade", "rollback"]) {
   if (typeof wave1Host.distribution?.[key] !== "string" || wave1Host.distribution[key] === "") {
     fail(`contract/wave1/host.json: distribution.${key} required`);
   }
+}
+// The canonical rollback example is a structured field
+// (`distribution.rollbackExample`), not free-form prose. The guard builds the
+// exact runnable install command and requires the contract rollback text and
+// the published docs to contain that command verbatim. This cannot be satisfied
+// by an unrelated valid pin, and a malformed canonical ref fails even when
+// another pin exists. Offline: shape/agreement only, no remote lookup; tags
+// stay valid in unrelated prose.
+const packageDoc = existsSync(join(root, "docs", "package.md"))
+  ? readFileSync(join(root, "docs", "package.md"), "utf8")
+  : "";
+for (const message of rollbackExampleErrors({
+  example: wave1Host.distribution?.rollbackExample,
+  rollback: wave1Host.distribution?.rollback ?? "",
+  packageDoc,
+})) {
+  fail(message);
 }
 scanText("contract/wave1/host.json");
 scanText("contract/wave1/operations.json");
