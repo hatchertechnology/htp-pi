@@ -51,11 +51,11 @@ pi remove git:github.com/hatchertechnology/htp-pi
   remove and install target the owner (global) package instead.
 - Tested resolvable pin with the complete Wave 1 package (`1.0.0`, extension
   entry, five skills, 25 canonical operations):
-  `git:github.com/hatchertechnology/htp-pi@0a386f04b03087ab4c16834e64bdd5c362ec6618`
-  (install it with `pi install`, or add `--local --approve` for a project-local
-  install). A full commit is immutable; a tag also works when it resolves. An
-  earlier commit can predate the package's Wave 1 resources — `da0c262` is Wave 0
-  `0.0.0` and exposes no extension or skills — so pin a reviewed release commit.
+  `pi install git:github.com/hatchertechnology/htp-pi@0a386f04b03087ab4c16834e64bdd5c362ec6618`
+  (add `--local --approve` for a project-local install). A full commit is
+  immutable; a tag also works when it resolves. An earlier commit can predate the
+  package's Wave 1 resources — `da0c262` is Wave 0 `0.0.0` and exposes no
+  extension or skills — so pin a reviewed release commit.
 - `node scripts/check-install-lifecycle.mjs` runs install/list/update/remove
   against the real CLI in an isolated `PI_CODING_AGENT_DIR`; it never touches
   the user's settings.

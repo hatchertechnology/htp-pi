@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // Mixed-scope rollback check for the htp-pi guidance.
 //
-// Installs the same git source in the user (global) and project-local scopes
-// from a disposable LOCAL git fixture, then verifies the documented
-// project-local remove/install path touches only the project scope. The git
-// source is a local bare repository reached through a throwaway per-run git
+// Installs the same git source at different revisions in the user (global) and
+// project-local scopes from a disposable LOCAL git fixture, then verifies the
+// documented project-local remove/install path moves only the project scope and
+// leaves the global checkout at its exact revision. The git source is a local
+// bare repository reached through a throwaway per-run git
 // `insteadOf` mapping, and HOME/PI_CODING_AGENT_DIR/git config are isolated, so
 // the check is offline and never touches the network or the user's profile.
 //
@@ -85,40 +86,55 @@ const globalCheckout = join(agentDir, "git", "scoped.local", "hatchertechnology"
 const projectCheckout = join(project, ".pi", "git", "scoped.local", "hatchertechnology", "scoped-pi");
 
 try {
-  // 1. Build the disposable local git fixture.
+  // 1. Build the disposable local git fixture with three real revisions.
   cpSync(fixture, srcDir, { recursive: true });
   git(["init", "-q", "-b", "main"], srcDir);
-  git(["add", "-A"], srcDir);
-  git(["-c", "user.email=scoped@example.invalid", "-c", "user.name=scoped", "commit", "-q", "-m", "fixture"], srcDir);
-  const fixtureSha = git(["rev-parse", "HEAD"], srcDir).stdout.trim();
+  const commit = (label) => {
+    writeFileSync(join(srcDir, "REV.txt"), `${label}\n`);
+    git(["add", "-A"], srcDir);
+    git(["-c", "user.email=scoped@example.invalid", "-c", "user.name=scoped", "commit", "-q", "-m", label], srcDir);
+    return git(["rev-parse", "HEAD"], srcDir).stdout.trim();
+  };
+  const revA = commit("rev A");
+  const revB = commit("rev B");
+  const revC = commit("rev C");
   git(["clone", "--bare", srcDir, bareRepo], work);
   writeFileSync(gitConfig, `[url "file://${bareRepo}"]\n\tinsteadOf = https://scoped.local/hatchertechnology/scoped-pi\n`);
 
-  // 2. Install the same source in both scopes.
-  run(["install", source], home, "global install");
-  run(["install", source, "--local", "--approve"], project, "project install");
-  if (!has(packages(globalSettings), source)) errors.push("global install did not record the source");
-  if (!has(packages(projectSettings), source)) errors.push("project install did not record the source");
-  if (git(["rev-parse", "HEAD"], projectCheckout).stdout.trim() !== fixtureSha) {
-    errors.push("project checkout is not at the fixture commit");
+  // 2. Install different real revisions in each scope: global=revB, project=revC.
+  run(["install", `${source}@${revB}`], home, "global install");
+  run(["install", `${source}@${revC}`, "--local", "--approve"], project, "project install");
+  if (!has(packages(globalSettings), `${source}@${revB}`)) errors.push("global install did not record revB");
+  if (!has(packages(projectSettings), `${source}@${revC}`)) errors.push("project install did not record revC");
+  if (git(["rev-parse", "HEAD"], globalCheckout).stdout.trim() !== revB) {
+    errors.push("global checkout is not at revB");
+  }
+  if (git(["rev-parse", "HEAD"], projectCheckout).stdout.trim() !== revC) {
+    errors.push("project checkout is not at revC");
   }
 
   // 3. Documented project-local rollback: remove only the project package.
   run(["remove", source, "--local", "--approve"], project, "project remove");
   if (has(packages(projectSettings), source)) errors.push("project remove left the project package");
-  if (!has(packages(globalSettings), source)) errors.push("project remove changed the global package");
+  if (!has(packages(globalSettings), `${source}@${revB}`)) errors.push("project remove changed the global package");
   if (!existsSync(globalCheckout)) errors.push("project remove deleted the global checkout");
+  if (git(["rev-parse", "HEAD"], globalCheckout).stdout.trim() !== revB) {
+    errors.push("project remove moved the global checkout");
+  }
 
-  // 4. Reinstall the prior commit into the project scope only.
-  run(["install", `${source}@${fixtureSha}`, "--local", "--approve"], project, "project pinned reinstall");
-  if (!has(packages(projectSettings), `${source}@${fixtureSha}`)) {
-    errors.push("project reinstall did not record the pinned source");
+  // 4. Roll the project back to revA; the global scope must not move.
+  run(["install", `${source}@${revA}`, "--local", "--approve"], project, "project pinned reinstall");
+  if (!has(packages(projectSettings), `${source}@${revA}`)) {
+    errors.push("project reinstall did not record revA");
   }
-  if (git(["rev-parse", "HEAD"], projectCheckout).stdout.trim() !== fixtureSha) {
-    errors.push("project checkout is not at the reinstalled commit");
+  if (git(["rev-parse", "HEAD"], projectCheckout).stdout.trim() !== revA) {
+    errors.push("project checkout is not at revA");
   }
-  if (has(packages(globalSettings), `${source}@${fixtureSha}`)) {
+  if (has(packages(globalSettings), `${source}@${revA}`)) {
     errors.push("project reinstall changed the global package");
+  }
+  if (git(["rev-parse", "HEAD"], globalCheckout).stdout.trim() !== revB) {
+    errors.push("global checkout SHA changed after local reinstall");
   }
 } finally {
   rmSync(work, { recursive: true, force: true });
@@ -130,5 +146,5 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(
-  `Scoped rollback OK: project-local remove/reinstall left the same-source global package untouched (${piBin} ${version.stdout.trim()}).`,
+  `Scoped rollback OK: project-local remove/reinstall kept the global package at its exact revision while the project moved (${piBin} ${version.stdout.trim()}).`,
 );

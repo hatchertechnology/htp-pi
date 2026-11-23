@@ -11,7 +11,7 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
-import { extractDelimitedGitTokens, findCommitPins } from "./rollback-pin.mjs";
+import { rollbackExampleErrors } from "./rollback-pin.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
@@ -126,25 +126,22 @@ for (const key of ["install", "upgrade", "rollback"]) {
     fail(`contract/wave1/host.json: distribution.${key} required`);
   }
 }
-// The contract's rollback example must pin a complete, immutable git ref and the
-// published docs must mirror that exact example. Pi supports tags, so this
-// checks only the contract's rollback example and does not ban tags elsewhere.
-// The example source token is delimited (backticks) and the ref is validated
-// anchored as exactly 40 hex, so any suffixed ref fails without a trailing-
-// character denylist. Offline: shape/agreement only, no remote lookup.
-const rollback = wave1Host.distribution?.rollback ?? "";
-const contractPins = findCommitPins(rollback);
-if (contractPins.length === 0) {
-  fail("contract/wave1/host.json: distribution.rollback must show a delimited git source pin (`git:<source>@<40-hex-commit>`)");
-}
+// The canonical rollback example is a structured field
+// (`distribution.rollbackExample`), not free-form prose. The guard builds the
+// exact runnable install command and requires the contract rollback text and
+// the published docs to contain that command verbatim. This cannot be satisfied
+// by an unrelated valid pin, and a malformed canonical ref fails even when
+// another pin exists. Offline: shape/agreement only, no remote lookup; tags
+// stay valid in unrelated prose.
 const packageDoc = existsSync(join(root, "docs", "package.md"))
   ? readFileSync(join(root, "docs", "package.md"), "utf8")
   : "";
-const docTokens = new Set(extractDelimitedGitTokens(packageDoc));
-for (const pin of contractPins) {
-  if (!docTokens.has(pin.token)) {
-    fail(`docs/package.md: rollback example must use the exact delimited pin shown in contract/wave1/host.json (${pin.token})`);
-  }
+for (const message of rollbackExampleErrors({
+  example: wave1Host.distribution?.rollbackExample,
+  rollback: wave1Host.distribution?.rollback ?? "",
+  packageDoc,
+})) {
+  fail(message);
 }
 scanText("contract/wave1/host.json");
 scanText("contract/wave1/operations.json");

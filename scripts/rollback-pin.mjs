@@ -1,35 +1,48 @@
-// Rollback-pin parsing for the offline package guard.
+// Structured canonical rollback example for the offline package guard.
 //
-// The published rollback example must show an immutable git source pin. The
-// prose delimits the source token with backticks, so the token is parsed whole
-// and its ref is validated with an anchored pattern. This avoids a denylist of
-// trailing characters (Git refs may contain many characters) and continues to
-// allow tags and other refs elsewhere in the docs.
+// The contract carries the canonical package source and commit as structured
+// fields. The guard builds the exact runnable install command and requires the
+// published docs (and the rollback field) to contain that command verbatim.
+// This is narrow by construction: it cannot be satisfied by an unrelated valid
+// pin in prose, and a malformed ref for the canonical example is rejected even
+// when another valid pin exists. Tags remain valid in unrelated examples.
 
-const DELIMITED_GIT_TOKEN = /`(git:[^`\s]+)`/g;
-const COMMIT_REF = /^[0-9a-f]{40}$/;
+export const FULL_COMMIT_REF = /^[0-9a-f]{40}$/;
 
-/** Extract backticked git source tokens from text. */
-export function extractDelimitedGitTokens(text) {
-  return [...String(text).matchAll(DELIMITED_GIT_TOKEN)].map((match) => match[1]);
+/**
+ * Build the exact runnable install command for a structured rollback example.
+ * Returns null when the example is missing, is not a `git:` source, or does
+ * not pin a full 40-hex commit.
+ */
+export function expectedRollbackInstall(example) {
+  if (example === null || typeof example !== "object" || Array.isArray(example)) return null;
+  const { source, ref } = example;
+  if (typeof source !== "string" || !source.startsWith("git:")) return null;
+  if (typeof ref !== "string" || !FULL_COMMIT_REF.test(ref)) return null;
+  return `pi install ${source}@${ref}`;
 }
 
 /**
- * Parse a delimited git source token. Returns `{ source, ref, token }` when the
- * ref is exactly a 40-hex commit, otherwise null (for example a tag or a
- * placeholder).
+ * Validate the structured example and its documentation. Returns an array of
+ * human-readable errors (empty when valid). The exact delimited command is
+ * required in both the contract rollback text and the published docs, so a
+ * malformed canonical ref cannot hide behind an unrelated valid pin.
  */
-export function parseCommitPin(token) {
-  if (typeof token !== "string" || !token.startsWith("git:")) return null;
-  const at = token.lastIndexOf("@");
-  if (at <= "git:".length) return null;
-  const source = token.slice(0, at);
-  const ref = token.slice(at + 1);
-  if (!COMMIT_REF.test(ref)) return null;
-  return { source, ref, token };
-}
-
-/** Find every delimited git token in text whose ref is a full 40-hex commit. */
-export function findCommitPins(text) {
-  return extractDelimitedGitTokens(text).map(parseCommitPin).filter(Boolean);
+export function rollbackExampleErrors({ example, rollback = "", packageDoc = "" } = {}) {
+  const errors = [];
+  const expected = expectedRollbackInstall(example);
+  if (!expected) {
+    errors.push(
+      "distribution.rollbackExample must give a git: source and a full 40-hex commit ref",
+    );
+    return errors;
+  }
+  const delimited = `\`${expected}\``;
+  if (!String(rollback).includes(delimited)) {
+    errors.push(`distribution.rollback must contain the exact runnable command ${delimited}`);
+  }
+  if (!String(packageDoc).includes(delimited)) {
+    errors.push(`docs/package.md must contain the exact runnable rollback install command ${delimited}`);
+  }
+  return errors;
 }
