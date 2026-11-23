@@ -11,6 +11,8 @@ import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
+import { extractDelimitedGitTokens, findCommitPins } from "./rollback-pin.mjs";
+
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 const errors = [];
@@ -127,22 +129,21 @@ for (const key of ["install", "upgrade", "rollback"]) {
 // The contract's rollback example must pin a complete, immutable git ref and the
 // published docs must mirror that exact example. Pi supports tags, so this
 // checks only the contract's rollback example and does not ban tags elsewhere.
-// The ref must be exactly 40 hex with full-token termination, so a suffixed ref
-// such as @<40hex>-not-a-commit cannot pass. Offline: shape/agreement only, no
-// remote lookup.
+// The example source token is delimited (backticks) and the ref is validated
+// anchored as exactly 40 hex, so any suffixed ref fails without a trailing-
+// character denylist. Offline: shape/agreement only, no remote lookup.
 const rollback = wave1Host.distribution?.rollback ?? "";
-const PIN_RE = /git:[^\s"'`@]+@[0-9a-f]{40}(?![0-9A-Za-z._/-])/g;
-const contractPins = [...rollback.matchAll(PIN_RE)].map((m) => m[0]);
+const contractPins = findCommitPins(rollback);
 if (contractPins.length === 0) {
-  fail("contract/wave1/host.json: distribution.rollback must show a full git source pin (git:<source>@<40-hex-commit>)");
+  fail("contract/wave1/host.json: distribution.rollback must show a delimited git source pin (`git:<source>@<40-hex-commit>`)");
 }
 const packageDoc = existsSync(join(root, "docs", "package.md"))
   ? readFileSync(join(root, "docs", "package.md"), "utf8")
   : "";
-const docPins = new Set([...packageDoc.matchAll(PIN_RE)].map((m) => m[0]));
+const docTokens = new Set(extractDelimitedGitTokens(packageDoc));
 for (const pin of contractPins) {
-  if (!docPins.has(pin)) {
-    fail(`docs/package.md: rollback example must use the exact pin shown in contract/wave1/host.json (${pin})`);
+  if (!docTokens.has(pin.token)) {
+    fail(`docs/package.md: rollback example must use the exact delimited pin shown in contract/wave1/host.json (${pin.token})`);
   }
 }
 scanText("contract/wave1/host.json");

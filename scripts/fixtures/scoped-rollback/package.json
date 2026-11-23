@@ -1,0 +1,8 @@
+{
+  "name": "scoped-rollback-fixture",
+  "version": "1.0.0",
+  "type": "module",
+  "pi": {
+    "skills": ["./skills"]
+  }
+}
