@@ -30,18 +30,19 @@ pi remove git:github.com/hatchertechnology/htp-pi
 ```
 
 - A package that fails to install is skipped with a warning; Pi keeps running.
-- Pi pins a ref given as `<source>@<ref>` and does not move it on update. The
-  canonical repo publishes no tags, so record the installed full commit before
-  an upgrade, and reinstall that exact SHA to roll back:
-  `git -C ~/.pi/agent/git/github.com/hatchertechnology/htp-pi rev-parse HEAD`;
-  then `pi remove git:github.com/hatchertechnology/htp-pi` and
+- Pi pins a ref given as `<source>@<ref>` and does not move it on update. Before
+  an upgrade, record the installed full commit so you can return to it. `pi list`
+  prints the checkout path (under Pi's agent directory, `$PI_CODING_AGENT_DIR`
+  or `~/.pi/agent` by default, or `.pi/git` for a `--local` install), so run
+  `git -C <checkout path> rev-parse HEAD`.
+  To roll back, `pi remove git:github.com/hatchertechnology/htp-pi` then
   `pi install git:github.com/hatchertechnology/htp-pi@<full-40-hex-sha>`.
-  Tested resolvable example with the complete Wave 1 package (`1.0.0`,
-  extension entry, five skills, 25 canonical operations):
+  Tested example with the complete Wave 1 package (`1.0.0`, extension entry,
+  five skills, 25 canonical operations):
   `pi install git:github.com/hatchertechnology/htp-pi@0a386f04b03087ab4c16834e64bdd5c362ec6618`.
-  An earlier commit can predate the package's Wave 1 resources — `da0c262` is
-  Wave 0 `0.0.0` and exposes no extension or skills — so pin a reviewed release
-  commit, not an arbitrary SHA or a tag name.
+  A full commit is immutable; a tag also works when it resolves. An earlier
+  commit can predate the package's Wave 1 resources — `da0c262` is Wave 0
+  `0.0.0` and exposes no extension or skills — so pin a reviewed release commit.
 - `node scripts/check-install-lifecycle.mjs` runs install/list/update/remove
   against the real CLI in an isolated `PI_CODING_AGENT_DIR`; it never touches
   the user's settings.
