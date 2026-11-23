@@ -32,14 +32,26 @@ pi remove git:github.com/hatchertechnology/htp-pi
 - A package that fails to install is skipped with a warning; Pi keeps running.
 - Pi pins a ref given as `<source>@<ref>` and does not move it on update. Before
   an upgrade, record the installed full commit so you can return to it. `pi list`
-  prints the checkout path (under Pi's agent directory, `$PI_CODING_AGENT_DIR`
-  or `~/.pi/agent` by default, or `.pi/git` for a `--local` install), so run
+  prints the checkout path Pi uses (user installs live under its agent directory,
+  `$PI_CODING_AGENT_DIR` or `~/.pi/agent` by default), so run
   `git -C <checkout path> rev-parse HEAD`.
-  To roll back, `pi remove git:github.com/hatchertechnology/htp-pi` then
+- **Global (owner) install** — roll back with
+  `pi remove git:github.com/hatchertechnology/htp-pi` then
   `pi install git:github.com/hatchertechnology/htp-pi@<full-40-hex-sha>`.
-  Tested example with the complete Wave 1 package (`1.0.0`, extension entry,
-  five skills, 25 canonical operations):
-  `pi install git:github.com/hatchertechnology/htp-pi@0a386f04b03087ab4c16834e64bdd5c362ec6618`.
+- **Project-local install** (`--local`) — the project package is read only after
+  trust is granted, and every command must keep project scope. In an untrusted
+  project, list it with `pi list --approve` (a trusted project can use plain
+  `pi list`) and update with
+  `pi update git:github.com/hatchertechnology/htp-pi --approve`. Roll back from
+  the same project with
+  `pi remove git:github.com/hatchertechnology/htp-pi --local --approve` then
+  `pi install git:github.com/hatchertechnology/htp-pi@<full-40-hex-sha> --local --approve`.
+  `--approve` trusts the project for that invocation only; without `--local`,
+  remove and install target the owner (global) package instead.
+- Tested resolvable pin with the complete Wave 1 package (`1.0.0`, extension
+  entry, five skills, 25 canonical operations):
+  `pi install git:github.com/hatchertechnology/htp-pi@0a386f04b03087ab4c16834e64bdd5c362ec6618`
+  (global form; add `--local --approve` for a project-local install).
   A full commit is immutable; a tag also works when it resolves. An earlier
   commit can predate the package's Wave 1 resources — `da0c262` is Wave 0
   `0.0.0` and exposes no extension or skills — so pin a reviewed release commit.

@@ -25,7 +25,7 @@
     "source": "git:github.com/hatchertechnology/htp-pi",
     "install": "pi install git:github.com/hatchertechnology/htp-pi",
     "upgrade": "pi update git:github.com/hatchertechnology/htp-pi",
-    "rollback": "record the installed full commit before upgrading (pi list prints the checkout path; git -C <checkout-path> rev-parse HEAD), then pi remove git:github.com/hatchertechnology/htp-pi and pi install git:github.com/hatchertechnology/htp-pi@0a386f04b03087ab4c16834e64bdd5c362ec6618 (tested; carries the full Wave 1 package: extension, five skills, 25 canonical operations). A full commit is immutable; a tag also works when it resolves; earlier commits may lack Wave 1 resources.",
+    "rollback": "record the installed full commit before upgrading (pi list prints the checkout path; git -C <checkout-path> rev-parse HEAD). Global: pi remove git:github.com/hatchertechnology/htp-pi, then pi install git:github.com/hatchertechnology/htp-pi@0a386f04b03087ab4c16834e64bdd5c362ec6618 (tested; carries the full Wave 1 package: extension, five skills, 25 canonical operations). Project-local (--local): keep project scope with --local on remove and install and --approve while the project is untrusted (pi list --approve to see it), e.g. pi remove git:github.com/hatchertechnology/htp-pi --local --approve then pi install git:github.com/hatchertechnology/htp-pi@<full-40-hex-sha> --local --approve. A full commit is immutable; a tag also works when it resolves; earlier commits may lack Wave 1 resources.",
     "local": "pi install ./htp-pi"
   },
   "sources": [

@@ -124,20 +124,26 @@ for (const key of ["install", "upgrade", "rollback"]) {
     fail(`contract/wave1/host.json: distribution.${key} required`);
   }
 }
-// The rollback example must be a full, immutable git source pin and the
-// published docs must mirror that exact example. Pi supports tags too, so this
-// checks only the contract's rollback example; it does not ban tags elsewhere.
-// Offline: it validates the pin shape, not that the commit resolves.
+// The contract's rollback example must pin a complete, immutable git ref and the
+// published docs must mirror that exact example. Pi supports tags, so this
+// checks only the contract's rollback example and does not ban tags elsewhere.
+// The ref must be exactly 40 hex with full-token termination, so a suffixed ref
+// such as @<40hex>-not-a-commit cannot pass. Offline: shape/agreement only, no
+// remote lookup.
 const rollback = wave1Host.distribution?.rollback ?? "";
-const rollbackPin = rollback.match(/git:\S+?@[0-9a-f]{40}\b/)?.[0];
-if (!rollbackPin) {
+const PIN_RE = /git:[^\s"'`@]+@[0-9a-f]{40}(?![0-9A-Za-z._/-])/g;
+const contractPins = [...rollback.matchAll(PIN_RE)].map((m) => m[0]);
+if (contractPins.length === 0) {
   fail("contract/wave1/host.json: distribution.rollback must show a full git source pin (git:<source>@<40-hex-commit>)");
 }
 const packageDoc = existsSync(join(root, "docs", "package.md"))
   ? readFileSync(join(root, "docs", "package.md"), "utf8")
   : "";
-if (rollbackPin && !packageDoc.includes(rollbackPin)) {
-  fail(`docs/package.md: rollback example must use the exact pin shown in contract/wave1/host.json (${rollbackPin})`);
+const docPins = new Set([...packageDoc.matchAll(PIN_RE)].map((m) => m[0]));
+for (const pin of contractPins) {
+  if (!docPins.has(pin)) {
+    fail(`docs/package.md: rollback example must use the exact pin shown in contract/wave1/host.json (${pin})`);
+  }
 }
 scanText("contract/wave1/host.json");
 scanText("contract/wave1/operations.json");
