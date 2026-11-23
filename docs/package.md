@@ -30,9 +30,18 @@ pi remove git:github.com/hatchertechnology/htp-pi
 ```
 
 - A package that fails to install is skipped with a warning; Pi keeps running.
-- Git tags and commits are pinned. Roll back with
-  `pi remove git:github.com/hatchertechnology/htp-pi` followed by
-  `pi install git:github.com/hatchertechnology/htp-pi@v1.0.0`.
+- Pi pins a ref given as `<source>@<ref>` and does not move it on update. The
+  canonical repo publishes no tags, so record the installed full commit before
+  an upgrade, and reinstall that exact SHA to roll back:
+  `git -C ~/.pi/agent/git/github.com/hatchertechnology/htp-pi rev-parse HEAD`;
+  then `pi remove git:github.com/hatchertechnology/htp-pi` and
+  `pi install git:github.com/hatchertechnology/htp-pi@<full-40-hex-sha>`.
+  Tested resolvable example with the complete Wave 1 package (`1.0.0`,
+  extension entry, five skills, 25 canonical operations):
+  `pi install git:github.com/hatchertechnology/htp-pi@0a386f04b03087ab4c16834e64bdd5c362ec6618`.
+  An earlier commit can predate the package's Wave 1 resources — `da0c262` is
+  Wave 0 `0.0.0` and exposes no extension or skills — so pin a reviewed release
+  commit, not an arbitrary SHA or a tag name.
 - `node scripts/check-install-lifecycle.mjs` runs install/list/update/remove
   against the real CLI in an isolated `PI_CODING_AGENT_DIR`; it never touches
   the user's settings.

@@ -25,7 +25,7 @@
     "source": "git:github.com/hatchertechnology/htp-pi",
     "install": "pi install git:github.com/hatchertechnology/htp-pi",
     "upgrade": "pi update git:github.com/hatchertechnology/htp-pi",
-    "rollback": "pi remove git:github.com/hatchertechnology/htp-pi, then install a pinned ref such as git:github.com/hatchertechnology/htp-pi@v1.0.0",
+    "rollback": "record the installed full commit (git -C ~/.pi/agent/git/github.com/hatchertechnology/htp-pi rev-parse HEAD), then pi remove git:github.com/hatchertechnology/htp-pi and pi install git:github.com/hatchertechnology/htp-pi@<full-40-hex-sha>; no tags are published. Tested pin 0a386f04b03087ab4c16834e64bdd5c362ec6618 carries the full Wave 1 package (extension, five skills, 25 canonical operations); earlier commits may lack Wave 1 resources.",
     "local": "pi install ./htp-pi"
   },
   "sources": [

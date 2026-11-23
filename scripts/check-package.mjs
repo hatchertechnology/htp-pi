@@ -124,6 +124,23 @@ for (const key of ["install", "upgrade", "rollback"]) {
     fail(`contract/wave1/host.json: distribution.${key} required`);
   }
 }
+// The rollback pin must be an immutable full commit, not a tag (the canonical
+// repo publishes no tags), and the published docs must agree with it. This
+// guards against reintroducing the nonexistent `@v1.0.0` example.
+const rollback = wave1Host.distribution?.rollback ?? "";
+const rollbackSha = rollback.match(/[0-9a-f]{40}/)?.[0];
+if (!rollbackSha) {
+  fail("contract/wave1/host.json: distribution.rollback must pin a full 40-hex commit SHA");
+}
+const packageDoc = existsSync(join(root, "docs", "package.md"))
+  ? readFileSync(join(root, "docs", "package.md"), "utf8")
+  : "";
+if (rollbackSha && !packageDoc.includes(rollbackSha)) {
+  fail("docs/package.md: rollback example must use the same pinned commit as contract/wave1/host.json");
+}
+if (/@v\d+\.\d+\.\d+/.test(rollback) || /@v\d+\.\d+\.\d+/.test(packageDoc)) {
+  fail("rollback must not pin a tag name; the canonical repo publishes no tags");
+}
 scanText("contract/wave1/host.json");
 scanText("contract/wave1/operations.json");
 scanText("contract/wave1/overrides.json");
