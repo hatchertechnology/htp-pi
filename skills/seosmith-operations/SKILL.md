@@ -49,10 +49,16 @@ conflict. Never silently retry with a new UUID.
 
 - `seosmith_status`: inspect `state` (queued/running/completed/partial/failed/
   cancelled), `execution_state`, `worker_active`, `report_available`,
-  `delivery_state` and sanitized `error`. Status never resumes work. Retry reads
-  only on classified-transient failures.
+  `delivery_state` and sanitized `error`. Status never resumes work. It also
+  returns a derived `cancellation_terminal` boolean: true only when SEOsmith
+  reports `state=cancelled`, `execution_state=terminal` and
+  `worker_active=false`. An adapter-provided value is preserved; a missing lock
+  (`worker_active=null`) or an incomplete shape reports false. Retry reads only
+  on classified-transient failures.
 - `seosmith_cancel`: `cancel_accepted` is not terminal; poll status until
-  `cancellation_terminal` is true. A race may still finish an in-flight fetch.
+  `cancellation_terminal` is true. A race may still finish an in-flight fetch, so
+  a completion that lands first is reported as completed with its report, not as
+  a terminal cancellation.
 - Never interpret zero findings, a missing report, partial coverage, a process
   exit or accepted cancellation as a clean audit. `delivery_state=disabled` is
   independent of crawl completion.

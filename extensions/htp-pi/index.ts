@@ -152,7 +152,7 @@ export default function htpPiExtension(pi: any) {
     name: "seosmith_status",
     label: "SEOsmith status",
     description:
-      "Read the state of one SEOsmith audit (queued/running/completed/partial/failed/cancelled, coverage, delivery). Never resumes work. Classified-transient read failures may retry.",
+      "Read the state of one SEOsmith audit (queued/running/completed/partial/failed/cancelled, coverage, delivery). Never resumes work. `cancellation_terminal` is derived (cancelled + terminal + worker inactive); poll it after a cancel. Classified-transient read failures may retry.",
     parameters: idParams({ retries: Type.Optional(Type.Number({ description: "Read retries for classified-transient failures (default 1)." })) }),
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     async execute(_id: string, params: any) {
@@ -167,7 +167,7 @@ export default function htpPiExtension(pi: any) {
     name: "seosmith_cancel",
     label: "Cancel SEOsmith audit",
     description:
-      "Request cancellation of one SEOsmith audit. `cancel_accepted` is not terminal; poll status until `cancellation_terminal` is true. Completed reports are not changed.",
+      "Request cancellation of one SEOsmith audit. `cancel_accepted` is not terminal; poll status until `cancellation_terminal` is true (status derives it from cancelled + terminal + worker inactive). Completed reports are not changed.",
     parameters: idParams(),
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     async execute(_id: string, params: any) {

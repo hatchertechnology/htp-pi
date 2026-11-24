@@ -9,6 +9,7 @@ import { dirname } from "node:path";
 import {
   AdapterError,
   classifyFailure,
+  deriveCancellationTerminal,
   discover,
   exportReport,
   report,
@@ -296,6 +297,79 @@ test("export returns the receipt and rejects a non-absolute output", async () =>
     }),
     (e) => e.code === "invalid_argument",
   );
+});
+
+test("status derives cancellation_terminal from a terminal cancelled status", async () => {
+  const exec = makeExec({
+    capabilities: json(CAPS),
+    status: json({
+      state: "cancelled",
+      execution_state: "terminal",
+      worker_active: false,
+      report_available: false,
+    }),
+  });
+  const result = await status({
+    exec,
+    binary: BINARY,
+    database: "/tmp/run.sqlite",
+    id: "b2a844c8-5bc9-49e5-bcf0-8fd1407d69f4",
+  });
+  assert.equal(result.cancellation_terminal, true);
+});
+
+test("status does not claim terminal cancellation while the worker is active", async () => {
+  const cases = [
+    { state: "running", execution_state: "active", worker_active: true },
+    { state: "cancelled", execution_state: "unknown", worker_active: true },
+    { state: "cancelled", execution_state: "terminal", worker_active: null },
+    { state: "completed", execution_state: "terminal", worker_active: false },
+  ];
+  for (const shape of cases) {
+    const result = deriveCancellationTerminal(shape);
+    assert.equal(result.cancellation_terminal, false, JSON.stringify(shape));
+  }
+});
+
+test("an adapter-provided cancellation_terminal is preserved verbatim", () => {
+  const supplied = { state: "cancelled", execution_state: "terminal", worker_active: false, cancellation_terminal: false };
+  assert.deepEqual(deriveCancellationTerminal(supplied), supplied);
+});
+
+test("start and cancel also expose the derived terminal flag", async () => {
+  const startExec = makeExec({
+    capabilities: json(CAPS),
+    start: json({ state: "cancelled", execution_state: "terminal", worker_active: false }),
+  });
+  const started = await start({
+    exec: startExec,
+    binary: BINARY,
+    database: "/tmp/run.sqlite",
+    request: {
+      request_id: "b2a844c8-5bc9-49e5-bcf0-8fd1407d69f4",
+      website_id: "4822f25e-af3c-4c60-a8c6-31bd99d2acda",
+      url: "https://example.com/",
+      max_pages: 1,
+      max_resources: 0,
+      max_duration_seconds: 30,
+      delay_ms: 1000,
+      check_external_links: false,
+    },
+    requestDir: await mkdtemp(join(tmpdir(), "adapter-test-")),
+  });
+  assert.equal(started.cancellation_terminal, true);
+
+  const cancelExec = makeExec({
+    capabilities: json(CAPS),
+    cancel: json({ cancel_accepted: true, state: "cancelled", execution_state: "terminal", worker_active: false }),
+  });
+  const cancelled = await cancel({
+    exec: cancelExec,
+    binary: BINARY,
+    database: "/tmp/run.sqlite",
+    id: "b2a844c8-5bc9-49e5-bcf0-8fd1407d69f4",
+  });
+  assert.equal(cancelled.cancellation_terminal, true);
 });
 
 test("operations are rejected when the adapter does not advertise them", async () => {

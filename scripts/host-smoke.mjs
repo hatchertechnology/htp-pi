@@ -130,6 +130,11 @@ try {
 
   const status = parseResult(await call("seosmith_status", { database, id: requestId }));
   record("seosmith_status returns a state", status.state === "completed", JSON.stringify(status));
+  record(
+    "seosmith_status exposes a boolean cancellation_terminal derived by the host",
+    status.cancellation_terminal === false,
+    JSON.stringify({ cancellation_terminal: status.cancellation_terminal }),
+  );
 
   const cancelled = parseResult(await call("seosmith_cancel", { database, id: requestId }));
   record("seosmith_cancel is accepted but not terminal", cancelled.cancel_accepted === true && cancelled.cancellation_terminal === false, JSON.stringify(cancelled));

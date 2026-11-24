@@ -115,6 +115,27 @@ function parseJsonOutput(stdout) {
 }
 
 /**
+ * Add a single, derived terminal-cancellation flag to status-shaped output.
+ *
+ * SEOsmith's `status` shape reports state/execution_state/worker_active but not
+ * `cancellation_terminal`; only `cancel` adds it. Without a derived field a
+ * client following the tool contract ("poll status until
+ * cancellation_terminal is true") can never observe it. This is truthful only
+ * when SEOsmith itself reports a cancelled state, terminal execution and an
+ * inactive worker. An adapter-provided boolean is preserved verbatim; a
+ * missing lock (worker_active null) or any incomplete shape yields false.
+ */
+export function deriveCancellationTerminal(value) {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return value;
+  if (typeof value.cancellation_terminal === "boolean") return value;
+  const terminal =
+    value.state === "cancelled" &&
+    value.execution_state === "terminal" &&
+    value.worker_active === false;
+  return { ...value, cancellation_terminal: terminal };
+}
+
+/**
  * Map a failed process result to a classified AdapterError. SEOsmith writes a
  * compact JSON error object to stderr on invocation/storage failures.
  */
@@ -218,7 +239,7 @@ export async function start({
     timeout: timeoutMs,
   });
   if (result.code !== 0) throw classifyFailure(result, "start_failed");
-  return parseJsonOutput(result.stdout);
+  return deriveCancellationTerminal(parseJsonOutput(result.stdout));
 }
 
 async function readOperation({ exec, binary, database, id, operation, timeoutMs, retries = 0 }) {
@@ -242,7 +263,7 @@ export async function status({ exec, binary, database, id, timeoutMs = 60_000, r
   const result = await readOperation({
     exec, binary, database, id, operation: "status", timeoutMs, retries,
   });
-  return parseJsonOutput(result.stdout);
+  return deriveCancellationTerminal(parseJsonOutput(result.stdout));
 }
 
 /** Cancel request. Idempotent at the adapter; accepted is not terminal. */
@@ -250,7 +271,7 @@ export async function cancel({ exec, binary, database, id, timeoutMs = 60_000 } 
   const result = await readOperation({
     exec, binary, database, id, operation: "cancel", timeoutMs, retries: 0,
   });
-  return parseJsonOutput(result.stdout);
+  return deriveCancellationTerminal(parseJsonOutput(result.stdout));
 }
 
 /** Exact retained report bytes, returned verbatim as a string. */
