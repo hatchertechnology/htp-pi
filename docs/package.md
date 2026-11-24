@@ -78,6 +78,15 @@ truthful `adapter`/`hostSupport` state; `scripts/check-wave1-contract.mjs`
 rejects any `hostSupport: supported` without an implemented adapter and any
 supported operation without host smoke coverage.
 
+SEOsmith's own `status` response does not include `cancellation_terminal`; only
+`cancel` adds it. The package therefore derives a single boolean on `start`,
+`status` and `cancel`: true only when SEOsmith reports `state=cancelled`,
+`execution_state=terminal` and `worker_active=false`. An adapter-provided value
+is preserved, and a missing lock (`worker_active=null`) or incomplete shape is
+false. Polling `seosmith_status` for that field is therefore a valid way to
+observe terminal cancellation; a completion that wins the race stays a
+completed audit with its report.
+
 ## Configuration
 
 | Variable | Purpose |
