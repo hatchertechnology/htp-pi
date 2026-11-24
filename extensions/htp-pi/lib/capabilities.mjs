@@ -61,6 +61,16 @@ export const GATED_OPERATIONS = [
       "Durable provider request identity/reconciliation/cancellation (contract 1.1.0) requires deployed backend support and tool schema verification.",
   },
   {
+    id: "htp.website_audit_events",
+    reason:
+      "Additive audit read 1.3.0. H15 audit producer gates are disabled and the deployed 23-tool host does not expose it. Discover at tools/list; absence is unsupported, and a discovered read returns availability:producer_unavailable, never an empty success or zero count.",
+  },
+  {
+    id: "htp.website_operational_episodes",
+    reason:
+      "Additive audit read 1.3.0. H15 audit producer gates are disabled and the deployed 23-tool host does not expose it. Discover at tools/list; absence is unsupported, and a discovered read returns availability:producer_unavailable, never an empty success or zero count.",
+  },
+  {
     id: "seosmith.cli.crawl",
     reason: "Legacy crawl command is not used by the operations adapter; no host binding is advertised.",
   },

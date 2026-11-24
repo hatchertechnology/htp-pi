@@ -96,6 +96,15 @@ their pins remain unchanged. They are historical offline evidence: no network,
 no live adapter. The Wave 1 binding above supersedes their
 `adapter: not-implemented` state only for operations the package actually binds.
 
+The additive audit read 1.3.0 tree is vendored separately under
+`contract/audit-reads-1.3/` and pinned to the merged HTP PR #82 revision
+`4e7dc94e4f92a30fb57e4061fa1f06d517157c63` (tree
+`36a9456c6e2a819e7b4233ef0ae40b30a509efb8`). It is gated: the two reads are
+`unsupported` when absent from `tools/list`, and return explicit
+`availability:producer_unavailable` while the H15 producer gates are disabled,
+never an empty success. `node scripts/check-audit-read-readiness.mjs` is offline
+readiness only; no installed skill, host auth, backend or producer is exercised.
+
 ## License
 
 MIT

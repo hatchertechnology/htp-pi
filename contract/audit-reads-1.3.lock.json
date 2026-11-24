@@ -1,0 +1,32 @@
+{
+  "contractVersion": "1.3.0",
+  "canonicalCommit": "4e7dc94e4f92a30fb57e4061fa1f06d517157c63",
+  "sourcePR": 82,
+  "baseCommit": "8c9e84d168afc19572216ceef1362a1d76693307",
+  "revisionStatus": "merged",
+  "activationGates": [
+    "exact-head contract review and canonical merge",
+    "H15 producer/processor activation is independently gated and disabled",
+    "three host source/readiness companions at exact canonical merge; runtime support separately verified",
+    "fresh tools/list and input-schema discovery on the deployed host"
+  ],
+  "files": {
+    "docs/plugin-contract/v1.3/README.md": "6ee5d199b8da8721ffaffbb5c1f8d6a35d707febec38914b9065341c5e96ad5f",
+    "docs/plugin-contract/v1.3/audit-reads.json": "025eddf17c2a6b888dfd626136903c982fd4b06a363fab953a094c5217238577",
+    "docs/plugin-contract/v1.3/conformance.json": "5f484949b977d203c7b2c8f03735cf440b5c9c2a53c6337c6f63bedf5e0230f5",
+    "docs/plugin-contract/v1.3/historical-v1.2-source/plugins/htp/skills/repository-settings/SKILL.md": "cc7e9296146794082ebc28057040b334885da3c3a4a6b1e37e541e50fff0705d",
+    "docs/plugin-contract/v1.3/historical-v1.2-source/plugins/htp/skills/seo-review/SKILL.md": "6de51cb9af003acc47113f66a99029dd9dd005fae764f58301e7196fe28913bb",
+    "docs/plugin-contract/v1.3/historical-v1.2-source/plugins/htp/skills/seo-review/references/data.md": "b2dc920820cef70f06843421e40470bcd31d68e15334db9e5a4141d7287c5492",
+    "docs/plugin-contract/v1.3/historical-v1.2-source/plugins/htp/skills/website-management/SKILL.md": "74883c11c79fe126eb87f504bc9fdbe3d815ec786bfcbe05be51e2121de67353",
+    "docs/plugin-contract/v1.3/skills.lock.json": "0d2bde85c6365f212ec49086dda5061adf2e9c91d2d292d0a7c09fb8af891053",
+    "plugins/htp/skills/repository-settings/SKILL.md": "cc7e9296146794082ebc28057040b334885da3c3a4a6b1e37e541e50fff0705d",
+    "plugins/htp/skills/seo-review/SKILL.md": "6de51cb9af003acc47113f66a99029dd9dd005fae764f58301e7196fe28913bb",
+    "plugins/htp/skills/seo-review/references/data.md": "b2dc920820cef70f06843421e40470bcd31d68e15334db9e5a4141d7287c5492",
+    "plugins/htp/skills/website-management/SKILL.md": "09214a3b8b834ac3b52c7f3803d825b16c000aef3b34623fe86d4e2be044e5b6",
+    "scripts/audit-read-contract.mjs": "7c152afd46199c1fe87440b82bc29985f8b8fde7974681a4983aadb6648126fa",
+    "scripts/check-audit-read-contract.mjs": "c94c2e9f95dab9c4d6a9abfe65525866852003245ee04a59554f2e4fb890760f",
+    "scripts/plugin-contract.mjs": "cad9798593f413961781b2188590c7f57cf785926b84d143daf173068eda4d08"
+  },
+  "mergedTree": "36a9456c6e2a819e7b4233ef0ae40b30a509efb8",
+  "canonicalRevision": "HTP PR #82 merged into main at 4e7dc94e4f92a30fb57e4061fa1f06d517157c63 (tree 36a9456c6e2a819e7b4233ef0ae40b30a509efb8)"
+}
