@@ -33,11 +33,11 @@
     "typebox": "*"
   },
   "scripts": {
-    "test": "node scripts/check-contract.mjs && node scripts/check-host-results.mjs && node scripts/check-wave1-contract.mjs && node scripts/check-package.mjs && node scripts/check-provider-request-readiness.mjs && node --test scripts/check-provider-request-readiness.test.mjs && node scripts/check-audit-export-readiness.mjs && node --test scripts/check-audit-export-readiness.test.mjs && node --test tests/*.test.mjs && node scripts/host-smoke.mjs && node scripts/check-scoped-rollback.mjs",
+    "test": "node scripts/check-contract.mjs && node scripts/check-host-results.mjs && node scripts/check-wave1-contract.mjs && node scripts/check-package.mjs && node scripts/check-provider-request-readiness.mjs && node --test scripts/check-provider-request-readiness.test.mjs && node scripts/check-audit-export-readiness.mjs && node --test scripts/check-audit-export-readiness.test.mjs && node scripts/check-audit-read-readiness.mjs && node --test scripts/check-audit-read-readiness.test.mjs && node --test tests/*.test.mjs && node scripts/host-smoke.mjs && node scripts/check-scoped-rollback.mjs",
     "smoke": "node scripts/host-smoke.mjs && node scripts/check-install-lifecycle.mjs && node scripts/check-scoped-rollback.mjs && node scripts/check-htp-auth-state.mjs",
     "smoke:live": "node scripts/live-seosmith-smoke.mjs",
     "check:htp-endpoint": "node scripts/check-htp-fail-closed.mjs && node scripts/check-htp-auth-state.mjs",
-    "check": "node scripts/check-contract.mjs && node scripts/check-wave1-contract.mjs && node scripts/check-package.mjs && node scripts/check-provider-request-readiness.mjs && node scripts/check-audit-export-readiness.mjs",
+    "check": "node scripts/check-contract.mjs && node scripts/check-wave1-contract.mjs && node scripts/check-package.mjs && node scripts/check-provider-request-readiness.mjs && node scripts/check-audit-export-readiness.mjs && node scripts/check-audit-read-readiness.mjs",
     "results": "node scripts/check-host-results.mjs",
     "probe": "node scripts/probe-pi-capabilities.mjs"
   }

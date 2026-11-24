@@ -51,10 +51,24 @@ test("GATED_OPERATIONS covers the canonical gated operations too", () => {
   const ids = GATED_OPERATIONS.map((g) => g.id);
   for (const id of [
     "htp.set_website_business_location",
+    "htp.website_audit_events",
+    "htp.website_operational_episodes",
     "seosmith.ci.baseline",
     "seosmith.cli.crawl",
     "seosmith.cli.rules",
   ]) {
     assert.ok(ids.includes(id), `${id} must stay gated`);
   }
+});
+
+test("additive audit reads stay gated and never advertised as available", () => {
+  const gated = GATED_OPERATIONS.find((g) => g.id === "htp.website_audit_events");
+  assert.ok(gated, "website_audit_events must stay gated");
+  assert.match(gated.reason, /producer_unavailable/);
+  assert.match(gated.reason, /unsupported/);
+  const episodes = GATED_OPERATIONS.find((g) => g.id === "htp.website_operational_episodes");
+  assert.ok(episodes, "website_operational_episodes must stay gated");
+  assert.match(episodes.reason, /producer_unavailable/);
+  assert.ok(!HTP_MCP_OPERATIONS.includes("htp.website_audit_events"));
+  assert.ok(!HTP_MCP_OPERATIONS.includes("htp.website_operational_episodes"));
 });

@@ -125,6 +125,14 @@ unsafe inline result may explicitly fail with `EXPORT_REQUIRED`; this is not a
 partial report or a successful read. Use the versioned workflow below only after
 its tools are discovered and deployed backend support is verified.
 
+Use `website_audit_events` and `website_operational_episodes` with the same
+`website_id` and bounded `limit`/paired `before`/`before_id` cursor to read
+stored audit events and provider operational failure episodes. While the H15
+audit notification gates are disabled both return
+`availability:producer_unavailable`; that is not a successful empty history, not
+a zero count, and must not be treated as proof that no events exist. These reads
+never start collection, claim, processing or delivery.
+
 ### Complete audit export (contract 1.2.0; activation gated)
 
 Discover `website_audit_export_start_v1`, `website_audit_export_chunk_v1`, and
@@ -175,7 +183,7 @@ snapshot; cleanup is a backend obligation. Never expose private paths or tokens.
 
 For a requested import, pass the complete report text to `import_website_audit`
 as `report_json` with the target `website_id`. The report must match its hostname
-and be at most 16 MiB. Run identities deduplicate retries; conflicting content
+and be at most 4,952,756 UTF-8 bytes. Run identities deduplicate retries; conflicting content
 is an error. Verify the returned run in audit detail/history. Importing does not
 launch a crawl or provision a Seosmith worker.
 
