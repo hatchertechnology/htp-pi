@@ -293,3 +293,34 @@ test('rejects a capability module without the 1.4 gates', async () => {
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test('rejects a held 1.4 read advertised as an HTP MCP operation', async () => {
+  const dir = await isolatedCopy();
+  try {
+    // Mutation A from review w1c-wp6-pi-haiku-90df54c: a held read is added to
+    // the advertised MCP operation list. The readiness check must fail on the
+    // list itself, not on a report field that never carries an operation list.
+    const file = join(dir, 'extensions/htp-pi/lib/capabilities.mjs');
+    const source = await readFile(file, 'utf8');
+    await writeFile(file, source + '\nHTP_MCP_OPERATIONS.push("htp.website_audit_lifecycle");\n');
+    const r = run(dir);
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr || r.stdout, /must never be advertised as an HTP MCP operation/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});
+
+test('rejects a web-only read advertised as a SEOsmith local operation', async () => {
+  const dir = await isolatedCopy();
+  try {
+    const file = join(dir, 'extensions/htp-pi/lib/capabilities.mjs');
+    const source = await readFile(file, 'utf8');
+    await writeFile(file, source + '\nSEOSMITH_LOCAL_OPERATIONS.push("htp.search_evidence");\n');
+    const r = run(dir);
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr || r.stdout, /must never be advertised as a SEOsmith local operation/);
+  } finally {
+    await rm(dir, { recursive: true, force: true });
+  }
+});

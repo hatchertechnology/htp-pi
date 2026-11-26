@@ -9,8 +9,8 @@ under `contract/v1` remain pinned evidence; the Wave 1 binding state lives in
 
 ## Supported host version
 
-- Tested host: **Pi 1.6.0** (`pi --version`).
-- `contract/wave1/host.json` records `observedVersion: "1.6.0"` and
+- Tested host: **Pi 1.6.1** (`pi --version`).
+- `contract/wave1/host.json` records `observedVersion: "1.6.1"` and
   `minimumVersion: null`. No older floor is asserted: the mechanisms used here
   (`pi.registerTool`, `pi.registerMcpServer`, `pi.exec`, package `pi` manifest,
   MCP OAuth) are documented for the tested build and were re-verified with
@@ -65,9 +65,14 @@ pi remove git:github.com/hatchertechnology/htp-pi
   the release lifecycle in a disposable home from the Wave 1 R5 anchor
   `baseline-pre-r5-46f6b81a` (commit `46f6b81a90c50a97c5f6c3b73a3eed67a7ee9b39`):
   install the anchor, verify the installed tree, upgrade to the target, roll
-  back to the anchor, roll forward, uninstall. It never touches the owner's
-  `~/.pi/agent`, creates no tags, and contacts no network (a local bare mirror
-  is reached through a throwaway `insteadOf` mapping).
+  back to the anchor, roll forward, uninstall. Every child process runs with
+  `HOME`/`PI_CODING_AGENT_DIR` inside the disposable root, so the run never
+  writes to the owner's `~/.pi/agent`; it reads and executes only the installed
+  Pi runtime from `~/.pi/agent/install/releases` (read-only) and fails if a
+  top-level entry under the owner's agent directory or `install/` is added,
+  removed, resized or has its mtime changed. It creates no tags and contacts no
+  network (a local bare mirror is reached through a throwaway `insteadOf`
+  mapping).
 
 ### Withdraw / supersede rollback (no owner install)
 

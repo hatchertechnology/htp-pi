@@ -150,7 +150,10 @@ assert.doesNotMatch(skill, /rollout flag .*(is|are) (on|enabled)/i);
 
 // Shared skills stay byte-identical to the baseline-pre-r5-46f6b81a anchor:
 // profile 1.4 adds no shared skill text, so nothing under the five shipped
-// shared skills changes in this release.
+// shared skills changes in this release. The hashes below are pinned to that
+// anchor's blob hashes (verified with `git show <baseline>:<path> | sha256sum`
+// against the anchor when the release was prepared); they are literals so the
+// check also runs from a copy without the anchor object.
 const BASELINE = '46f6b81a90c50a97c5f6c3b73a3eed67a7ee9b39';
 const pinned = {
   'skills/htp-connection/SKILL.md': 'c52224ae6a21919e53825361fb0bf1e287f1868c77f8d9092127f56dbe06bc98',
@@ -161,13 +164,29 @@ const pinned = {
   'skills/website-management/SKILL.md': '7795999c6f7e2d82f4fb608e3cf724c227ce8e4f0724b395282f5ebbe44afe5a',
 };
 for (const [path, sha] of Object.entries(pinned)) {
-  assert.equal(hash(root, path), sha, 'shared skill drift against the baseline-pre-r5-46f6b81a anchor: ' + path);
+  assert.equal(hash(root, path), sha, 'shared skill drift against the baseline-pre-r5-46f6b81a anchor ' + BASELINE + ': ' + path);
 }
 
 // The runtime capability report must gate the 1.4 reads and the web-only
-// search/comparison reads, and must never advertise them as available.
-const { capabilityReport, GATED_OPERATIONS, PACKAGE_VERSION } = await import('../extensions/htp-pi/lib/capabilities.mjs');
+// search/comparison reads, and must never advertise them as available: the held
+// ids may not appear in any advertised operation list (the MCP list the adapter
+// exposes or the SEOsmith local operations). This asserts the lists themselves,
+// because `capabilityReport().htp` never carries an operation list.
+const { capabilityReport, GATED_OPERATIONS, HTP_MCP_OPERATIONS, SEOSMITH_LOCAL_OPERATIONS, PACKAGE_VERSION } = await import(
+  '../extensions/htp-pi/lib/capabilities.mjs'
+);
 assert.equal(PACKAGE_VERSION, '1.1.0');
+const heldIds = [
+  'htp.website_audit_lifecycle',
+  'htp.website_url_lifecycle',
+  'htp.website_remediation_list',
+  'htp.search_evidence',
+  'htp.independent_comparison',
+];
+for (const id of heldIds) {
+  assert.ok(!HTP_MCP_OPERATIONS.includes(id), 'held read must never be advertised as an HTP MCP operation: ' + id);
+  assert.ok(!SEOSMITH_LOCAL_OPERATIONS.includes(id), 'held read must never be advertised as a SEOsmith local operation: ' + id);
+}
 const gatedIds = GATED_OPERATIONS.map((g) => g.id);
 for (const id of ['htp.website_audit_lifecycle', 'htp.website_url_lifecycle', 'htp.website_remediation_list']) {
   const gated = GATED_OPERATIONS.find((g) => g.id === id);
@@ -183,7 +202,8 @@ for (const id of ['htp.search_evidence', 'htp.independent_comparison']) {
 const report = capabilityReport();
 assert.equal(report.package.version, '1.1.0');
 for (const gated of GATED_OPERATIONS) {
-  assert.ok(!JSON.stringify(report.htp ?? {}).includes(JSON.stringify(gated.id)), 'gated id must stay out of the advertised MCP list');
+  assert.ok(!JSON.stringify(report.htp ?? {}).includes(gated.id), 'gated id must stay out of the advertised MCP list: ' + gated.id);
+  assert.ok(!JSON.stringify(report.seosmith ?? {}).includes(gated.id), 'gated id must stay out of the advertised local operations: ' + gated.id);
 }
 
 let mode = 'synthetic';

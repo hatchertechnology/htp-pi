@@ -5,8 +5,12 @@
 // upgrades to the release target, and rolls back to the anchor, all against the
 // real `pi` CLI in an isolated HOME/PI_CODING_AGENT_DIR. The git source is a
 // local bare mirror reached through a throwaway `insteadOf` mapping, so the run
-// is offline and never touches the owner's ~/.pi/agent. No tags are created: the
-// anchor and the target are pinned by their full commit SHAs.
+// is offline. It never writes to the owner's ~/.pi/agent: it reads and executes
+// only the installed Pi runtime from there (a read-only module load), every
+// child process runs with HOME inside the disposable root, and the top-level
+// entries of the owner's agent directory and install/ are compared before and
+// after so any directory-level side effect fails the run. No tags are created:
+// the anchor and the target are pinned by their full commit SHAs.
 //
 // Skips (exit 0 with a notice) when the `pi` CLI is not available.
 //
@@ -18,7 +22,7 @@
 
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -55,20 +59,16 @@ function log(line) {
 }
 
 const piBin = process.env.PI_BIN || "pi";
-const version = spawnSync(piBin, ["--version"], { encoding: "utf8" });
-if (version.error || version.status !== 0) {
-  console.log(`rehearsal skipped: ${piBin} CLI is not available`);
-  process.exit(0);
-}
 
-// Never touch the owner's ~/.pi/agent. Read-only hash before and after; the
-// child processes always run with HOME and PI_CODING_AGENT_DIR inside the
-// disposable root, and the script refuses a root that resolves there.
+// The owner's agent directory is read-only for this rehearsal. A shell-level `pi`
+// invocation creates and removes `<agent>/install/update.lock` and
+// `<agent>/settings.json.lock`, which changes directory mtimes even though
+// nothing survives, so even the version probe runs with HOME inside the
+// disposable root below. The installed runtime module itself is only imported.
 const realHome = homedir();
 const realAgentDir = join(realHome, ".pi", "agent");
 const realSettings = join(realAgentDir, "settings.json");
 const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
-const realSettingsBefore = existsSync(realSettings) ? sha256(realSettings) : "(absent)";
 
 const work = mkdtempSync(join(tmpdir(), "htp-pi-rehearsal-"));
 if (resolve(work).startsWith(realAgentDir)) {
@@ -83,6 +83,64 @@ const checkout = join(agentDir, ...CHECKOUT);
 const sentinel = join(agentDir, "rehearsal-sentinel.txt");
 const results = [];
 const errors = [];
+
+const baseEnv = {
+  ...process.env,
+  HOME: home,
+  PI_CODING_AGENT_DIR: agentDir,
+  GIT_CONFIG_GLOBAL: gitConfig,
+  GIT_CONFIG_NOSYSTEM: "1",
+  GIT_TERMINAL_PROMPT: "0",
+  TERM: "dumb",
+};
+
+// Owner-directory snapshot. Live session state is written by whatever Pi session
+// the owner is running (not by this script), so it is reported but not asserted.
+const LIVE_SESSION_ENTRIES = new Set(["sessions", "models-store.json", "crashes.json", "trust.json"]);
+const WATCHED_DIRS = [
+  ["agent", realAgentDir],
+  ["agent/install", join(realAgentDir, "install")],
+];
+function ownerSnapshot() {
+  const snap = new Map();
+  for (const [label, dir] of WATCHED_DIRS) {
+    const entries = new Map();
+    if (existsSync(dir)) {
+      for (const name of readdirSync(dir).sort()) {
+        if (label === "agent" && LIVE_SESSION_ENTRIES.has(name)) continue;
+        const stat = statSync(join(dir, name));
+        entries.set(name, `${stat.isDirectory() ? "dir" : "file"} size=${stat.size} mtime=${stat.mtimeMs}`);
+      }
+    }
+    snap.set(label, entries);
+  }
+  return snap;
+}
+function ownerSnapshotDiff(before, after) {
+  const changes = [];
+  for (const [label, entries] of before) {
+    const later = after.get(label) ?? new Map();
+    for (const name of new Set([...entries.keys(), ...later.keys()])) {
+      if (!entries.has(name)) changes.push(`${label}/${name}: added`);
+      else if (!later.has(name)) changes.push(`${label}/${name}: removed`);
+      else if (entries.get(name) !== later.get(name)) changes.push(`${label}/${name}: ${entries.get(name)} -> ${later.get(name)}`);
+    }
+  }
+  return changes;
+}
+
+const realSettingsBefore = existsSync(realSettings) ? sha256(realSettings) : "(absent)";
+const ownerBefore = ownerSnapshot();
+
+mkdirSync(home, { recursive: true });
+mkdirSync(agentDir, { recursive: true });
+
+const version = spawnSync(piBin, ["--version"], { encoding: "utf8", env: baseEnv });
+if (version.error || version.status !== 0) {
+  rmSync(work, { recursive: true, force: true });
+  console.log(`rehearsal skipped: ${piBin} CLI is not available`);
+  process.exit(0);
+}
 
 function run(cmd, cmdArgs, env, label) {
   const r = spawnSync(cmd, cmdArgs, { cwd: work, env, encoding: "utf8" });
@@ -104,15 +162,24 @@ function settingsPackages() {
   }
 }
 
-const baseEnv = {
-  ...process.env,
-  HOME: home,
-  PI_CODING_AGENT_DIR: agentDir,
-  GIT_CONFIG_GLOBAL: gitConfig,
-  GIT_CONFIG_NOSYSTEM: "1",
-  GIT_TERMINAL_PROMPT: "0",
-  TERM: "dumb",
-};
+// The installed checkout must match its pinned commit. npm writes an untracked
+// package-lock.json into the checkout during the dependency step (the file is not
+// tracked in this package), so tracked files must be clean and the only untracked
+// leftover allowed is exactly that file. Any other untracked path fails the step
+// instead of passing silently.
+function checkTree(label) {
+  const porcelain = spawnSync("git", ["status", "--porcelain"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
+  const lines = porcelain ? porcelain.split("\n") : [];
+  const untracked = lines.filter((line) => line.startsWith("?? "));
+  const tracked = lines.filter((line) => !line.startsWith("?? "));
+  check(`${label} checkout tree matches the commit`, tracked.length === 0, tracked.join(" | ") || "clean");
+  const unexpected = untracked.filter((line) => line !== "?? package-lock.json");
+  check(
+    `${label} has no untracked leftovers beyond package-lock.json`,
+    unexpected.length === 0,
+    untracked.join(" | ") || "none",
+  );
+}
 
 try {
   log(`rehearsal root: ${work}`);
@@ -120,9 +187,8 @@ try {
   log(`anchor: ${anchor} (baseline-pre-r5-46f6b81a; no tag is created)`);
   log(`target: ${target}`);
   log(`owner settings.json sha256 before: ${realSettingsBefore}`);
+  log(`owner agent snapshot: ${ownerBefore.get("agent").size} agent entries, ${ownerBefore.get("agent/install").size} install entries`);
 
-  mkdirSync(home, { recursive: true });
-  mkdirSync(agentDir, { recursive: true });
   writeFileSync(sentinel, "survives every step\n");
 
   // 1. Local bare mirror of this checkout (offline; no network, no tags).
@@ -144,13 +210,7 @@ try {
   check("settings record the anchor pin", settingsPackages().includes(`${SOURCE}@${anchor}`), JSON.stringify(settingsPackages()));
   const anchorHead = spawnSync("git", ["rev-parse", "HEAD"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
   check("checkout HEAD is the anchor", anchorHead === anchor, anchorHead);
-  // npm leaves an untracked package-lock.json in the checkout (the dependency
-  // step recreates it after Pi removes the tracked one), so the tree check
-  // verifies tracked files only; the pinned tree must match the commit.
-  const anchorDirty = spawnSync("git", ["status", "--porcelain", "--untracked-files=no"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
-  const anchorUntracked = spawnSync("git", ["status", "--porcelain"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
-  check("anchor checkout tree matches the commit", anchorDirty === "", anchorDirty || "clean");
-  log(`  anchor untracked leftovers: ${anchorUntracked || "none"}`);
+  checkTree("anchor");
   const anchorManifest = JSON.parse(readFileSync(join(checkout, "package.json"), "utf8"));
   check("anchor package version is 1.0.0", anchorManifest.version === "1.0.0", anchorManifest.version);
   check("anchor has no lifecycle-remediation skill", !existsSync(join(checkout, "skills", "lifecycle-remediation")));
@@ -163,10 +223,7 @@ try {
   check("settings record the target pin", settingsPackages().includes(`${SOURCE}@${target}`), JSON.stringify(settingsPackages()));
   const targetHead = spawnSync("git", ["rev-parse", "HEAD"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
   check("checkout HEAD is the target", targetHead === target, targetHead);
-  const targetDirty = spawnSync("git", ["status", "--porcelain", "--untracked-files=no"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
-  const targetUntracked = spawnSync("git", ["status", "--porcelain"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
-  check("target checkout tree matches the commit", targetDirty === "", targetDirty || "clean");
-  log(`  target untracked leftovers: ${targetUntracked || "none"}`);
+  checkTree("target");
   const targetManifest = JSON.parse(readFileSync(join(checkout, "package.json"), "utf8"));
   check("target package version is 1.1.0", targetManifest.version === "1.1.0", targetManifest.version);
   check("target ships the lifecycle-remediation skill", existsSync(join(checkout, "skills", "lifecycle-remediation", "SKILL.md")));
@@ -179,7 +236,6 @@ try {
   const releasesRoot = join(realHome, ".pi", "agent", "install", "releases");
   let hostModule;
   try {
-    const { readdirSync } = await import("node:fs");
     for (const release of readdirSync(releasesRoot).sort().reverse()) {
       const candidate = join(releasesRoot, release, "node_modules", "@earendil-works", "pi-coding-agent", "dist", "index.js");
       if (existsSync(candidate)) { hostModule = candidate; break; }
@@ -198,10 +254,7 @@ try {
   check("settings record the anchor pin again", settingsPackages().includes(`${SOURCE}@${anchor}`), JSON.stringify(settingsPackages()));
   const rollbackHead = spawnSync("git", ["rev-parse", "HEAD"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
   check("rollback checkout HEAD is the anchor", rollbackHead === anchor, rollbackHead);
-  const rollbackDirty = spawnSync("git", ["status", "--porcelain", "--untracked-files=no"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
-  const rollbackUntracked = spawnSync("git", ["status", "--porcelain"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
-  check("rollback checkout tree matches the commit", rollbackDirty === "", rollbackDirty || "clean");
-  log(`  rollback untracked leftovers: ${rollbackUntracked || "none"}`);
+  checkTree("rollback");
   const rollbackManifest = JSON.parse(readFileSync(join(checkout, "package.json"), "utf8"));
   check("rollback package version is 1.0.0", rollbackManifest.version === "1.0.0", rollbackManifest.version);
   check("rollback removed the lifecycle-remediation skill", !existsSync(join(checkout, "skills", "lifecycle-remediation")));
@@ -214,9 +267,19 @@ try {
   check("no packages remain", settingsPackages().length === 0, JSON.stringify(settingsPackages()));
   check("sentinel survives uninstall", readFileSync(sentinel, "utf8").startsWith("survives"));
 
-  // 8. The owner's ~/.pi/agent settings are byte-identical.
+  // 8. The owner's ~/.pi/agent is untouched: settings.json is byte-identical and
+  // no top-level entry under the agent directory or install/ was added, removed,
+  // resized or re-stamped. A shell-level `pi` invocation elsewhere on this host
+  // would create and remove install/update.lock and settings.json.lock and show
+  // up here as a changed `install` mtime.
   const realSettingsAfter = existsSync(realSettings) ? sha256(realSettings) : "(absent)";
   check("owner settings.json untouched", realSettingsAfter === realSettingsBefore, `${realSettingsBefore} -> ${realSettingsAfter}`);
+  const ownerChanges = ownerSnapshotDiff(ownerBefore, ownerSnapshot());
+  check(
+    "owner agent directory entries unchanged",
+    ownerChanges.length === 0,
+    ownerChanges.join("; ") || "no added, removed, resized or re-stamped entries",
+  );
 } finally {
   rmSync(work, { recursive: true, force: true });
 }

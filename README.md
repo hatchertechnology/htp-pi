@@ -18,8 +18,29 @@ pi update --extensions
 pi remove git:github.com/hatchertechnology/htp-pi
 ```
 
-Tested against Pi 1.6.0. See [`docs/package.md`](docs/package.md) for
+Tested against Pi 1.6.1. See [`docs/package.md`](docs/package.md) for
 distribution, upgrade/rollback, configuration and skill synchronization.
+
+## Rollback
+
+There is no owner install of this package to revert, so the R5 rollback is a
+**withdraw / supersede**, not an in-place downgrade (full text:
+[`docs/package.md`](docs/package.md#withdraw--supersede-rollback-no-owner-install)):
+
+1. **Withdraw the release** — delete the release tag, or repoint the documented
+   pin, so no new install resolves it.
+2. **Mark the release superseded** — record the replacement commit in the
+   release notes; a pinned full commit stays resolvable, so an installed
+   checkout keeps working until its owner updates it.
+3. **The anchor stays the reference** — `baseline-pre-r5-46f6b81a` (commit
+   `46f6b81a90c50a97c5f6c3b73a3eed67a7ee9b39`, package `1.0.0`) is the last good
+   reference. Anyone can return to it with
+   `pi install git:github.com/hatchertechnology/htp-pi@<full-40-hex-sha>`.
+
+This branch creates **no tag**: `baseline-pre-r5-46f6b81a` and the `v1.1.0`
+release tag are R5 steps on the merged commit. The withdraw/supersede path is
+rehearsed (install anchor, upgrade, roll back to the anchor, uninstall) by
+`node scripts/rehearse-release-pi.mjs --target <full-40-hex-sha>`.
 
 ## What ships
 

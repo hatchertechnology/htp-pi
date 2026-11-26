@@ -9,7 +9,7 @@ until its full scope and release verification are satisfied.
 
 ## Wave 1 host package (implemented)
 
-Tested host: **Pi 1.6.0** (`pi --version`). The installable package adds:
+Tested host: **Pi 1.6.1** (`pi --version`). The installable package adds:
 
 - `extensions/htp-pi/index.ts` — registers the `htp` streamable-HTTP MCP server
   (`pi.registerMcpServer`) and eight tools via `pi.registerTool`.
@@ -50,11 +50,12 @@ Companion machine-readable files:
 
 ## Verification basis
 
-Wave 0 verified 2026-11-16; Wave 1 re-verified 2026-11-21 on **Pi 1.6.0**.
+Wave 0 verified 2026-11-16; Wave 1 re-verified 2026-11-21 on **Pi 1.6.0**;
+the 1.1.0 release re-verified 2026-11-26 on **Pi 1.6.1**.
 
 | Source | Detail |
 | --- | --- |
-| Installed runtime | Wave 0: `pi --version` → `1.5.2`; Wave 1: → `1.6.0` |
+| Installed runtime | Wave 0: `pi --version` → `1.5.2`; Wave 1: → `1.6.0`; 1.1.0 release: → `1.6.1` |
 | Runtime help | `pi --help`, `pi mcp --help`, `pi auth --help`, `pi install --help` |
 | Official docs | `mcp.md`, `extensions.md`, `packages.md`, `skills.md`, `cli.md`, `security.md`, `environment-variables.md` from the installed `@earendil-works/pi-coding-agent` package |
 
@@ -69,10 +70,11 @@ an official source and local behavior could differ, the probe is the record.
 
 ## 1. Supported host version
 
-- Tested host: **Pi 1.6.0** (Wave 1; the Wave 0 record was 1.5.2).
+- Tested host: **Pi 1.6.1** (1.1.0 release; the Wave 1 record was 1.6.0 and the
+  Wave 0 record 1.5.2).
 - No minimum version is asserted beyond the tested build. The mechanisms used
   here (MCP OAuth login, `pi mcp add --oauth-client-registration`, package
-  skills, the extension API) are present in 1.6.0. `host.json` records
+  skills, the extension API) are present in 1.6.1. `host.json` records
   `minimumVersion: null` deliberately rather than guessing an older floor.
 - Provider/model selection is host-owned; HTP/SEOsmith integrations must not
   assume a specific Pi model.

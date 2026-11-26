@@ -1,7 +1,7 @@
 {
   "host": "pi",
   "displayName": "Pi",
-  "observedVersion": "1.6.0",
+  "observedVersion": "1.6.1",
   "minimumVersion": null,
   "packageStatus": "implemented",
   "transports": [
@@ -38,9 +38,9 @@
     "https://github.com/hatchertechnology/htp-pi"
   ],
   "provenance": {
-    "cliVersion": "1.6.0",
+    "cliVersion": "1.6.1",
     "package": "@earendil-works/pi-coding-agent",
-    "packageVersion": "1.6.0",
+    "packageVersion": "1.6.1",
     "docsUsed": [
       "extensions.md",
       "packages.md",

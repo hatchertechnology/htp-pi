@@ -16,6 +16,11 @@
   scenarios, 8 canonical artifacts) plus its isolated-TMPDIR mutation tests, and
   `scripts/rehearse-release-pi.mjs` for the disposable-home install/upgrade/rollback
   rehearsal from the `baseline-pre-r5-46f6b81a` anchor.
+- Record the tested host as **Pi 1.6.1** (`contract/wave1/host.json`
+  `observedVersion`); `check-package.mjs` pins the record and the host smoke
+  asserts it against the installed runtime that actually ran. The readiness
+  checker now fails if a held read is advertised in an MCP or SEOsmith operation
+  list, and the README carries the withdraw/supersede rollback summary.
 
 ## [1.0.0] - 2026-11-21
 
