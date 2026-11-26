@@ -5,12 +5,16 @@
 // upgrades to the release target, and rolls back to the anchor, all against the
 // real `pi` CLI in an isolated HOME/PI_CODING_AGENT_DIR. The git source is a
 // local bare mirror reached through a throwaway `insteadOf` mapping, so the run
-// is offline. It never writes to the owner's ~/.pi/agent: it reads and executes
-// only the installed Pi runtime from there (a read-only module load), every
-// child process runs with HOME inside the disposable root, and the top-level
-// entries of the owner's agent directory and install/ are compared before and
-// after so any directory-level side effect fails the run. No tags are created:
-// the anchor and the target are pinned by their full commit SHAs.
+// is offline. It writes no file content to the owner's ~/.pi/agent and leaves no
+// entry behind there: it reads and executes only the installed Pi runtime (a
+// read-only module load), and every child runs with HOME inside the disposable
+// root. The `pi` CLI itself is a managed install and creates and removes its own
+// `<install>/update.lock` on each invocation, which bumps the `install/`
+// directory mtime; the run therefore asserts the durable record — no top-level
+// entry added, removed or resized under the owner's agent directory or install/,
+// no lock left behind, settings.json byte-identical — and reports mtime changes.
+// No tags are created: the anchor and the target are pinned by their full commit
+// SHAs.
 //
 // Skips (exit 0 with a notice) when the `pi` CLI is not available.
 //
@@ -60,11 +64,14 @@ function log(line) {
 
 const piBin = process.env.PI_BIN || "pi";
 
-// The owner's agent directory is read-only for this rehearsal. A shell-level `pi`
-// invocation creates and removes `<agent>/install/update.lock` and
-// `<agent>/settings.json.lock`, which changes directory mtimes even though
-// nothing survives, so even the version probe runs with HOME inside the
-// disposable root below. The installed runtime module itself is only imported.
+// The owner's agent directory is data-read-only for this rehearsal: no child
+// writes a file there. It is still not untouched at the metadata level. A
+// shell-level `pi` invocation creates and removes `<managed install>/update.lock`
+// (and `<agent>/settings.json.lock`) even with HOME redirected, because the CLI
+// resolves its managed install root from its own executable path. Those locks are
+// transient and change the `install/` directory mtime. This script therefore
+// asserts the durable record (entry set, sizes, settings content, no leftover
+// lock) and reports mtime changes instead of failing on them.
 const realHome = homedir();
 const realAgentDir = join(realHome, ".pi", "agent");
 const realSettings = join(realAgentDir, "settings.json");
@@ -96,6 +103,8 @@ const baseEnv = {
 
 // Owner-directory snapshot. Live session state is written by whatever Pi session
 // the owner is running (not by this script), so it is reported but not asserted.
+// Entries are compared by type and size (added/removed/resized); mtimes are kept
+// only for the report, because the host CLI's own lock bumps a directory mtime.
 const LIVE_SESSION_ENTRIES = new Set(["sessions", "models-store.json", "crashes.json", "trust.json"]);
 const WATCHED_DIRS = [
   ["agent", realAgentDir],
@@ -109,7 +118,10 @@ function ownerSnapshot() {
       for (const name of readdirSync(dir).sort()) {
         if (label === "agent" && LIVE_SESSION_ENTRIES.has(name)) continue;
         const stat = statSync(join(dir, name));
-        entries.set(name, `${stat.isDirectory() ? "dir" : "file"} size=${stat.size} mtime=${stat.mtimeMs}`);
+        entries.set(name, {
+          entry: `${stat.isDirectory() ? "dir" : "file"} size=${stat.size}`,
+          mtime: stat.mtimeMs,
+        });
       }
     }
     snap.set(label, entries);
@@ -118,15 +130,20 @@ function ownerSnapshot() {
 }
 function ownerSnapshotDiff(before, after) {
   const changes = [];
+  const restamped = [];
   for (const [label, entries] of before) {
     const later = after.get(label) ?? new Map();
     for (const name of new Set([...entries.keys(), ...later.keys()])) {
       if (!entries.has(name)) changes.push(`${label}/${name}: added`);
       else if (!later.has(name)) changes.push(`${label}/${name}: removed`);
-      else if (entries.get(name) !== later.get(name)) changes.push(`${label}/${name}: ${entries.get(name)} -> ${later.get(name)}`);
+      else if (entries.get(name).entry !== later.get(name).entry) {
+        changes.push(`${label}/${name}: ${entries.get(name).entry} -> ${later.get(name).entry}`);
+      } else if (entries.get(name).mtime !== later.get(name).mtime) {
+        restamped.push(name);
+      }
     }
   }
-  return changes;
+  return { changes, restamped };
 }
 
 const realSettingsBefore = existsSync(realSettings) ? sha256(realSettings) : "(absent)";
@@ -267,19 +284,27 @@ try {
   check("no packages remain", settingsPackages().length === 0, JSON.stringify(settingsPackages()));
   check("sentinel survives uninstall", readFileSync(sentinel, "utf8").startsWith("survives"));
 
-  // 8. The owner's ~/.pi/agent is untouched: settings.json is byte-identical and
-  // no top-level entry under the agent directory or install/ was added, removed,
-  // resized or re-stamped. A shell-level `pi` invocation elsewhere on this host
-  // would create and remove install/update.lock and settings.json.lock and show
-  // up here as a changed `install` mtime.
+  // 8. The owner's ~/.pi/agent keeps no durable change: settings.json is
+  // byte-identical, no top-level entry under the agent directory or install/ is
+  // added, removed or resized, and no host lock directory is left behind. The
+  // `pi` CLI's own transient <install>/update.lock bumps the install/ mtime; that
+  // is reported, not treated as a package side effect.
   const realSettingsAfter = existsSync(realSettings) ? sha256(realSettings) : "(absent)";
   check("owner settings.json untouched", realSettingsAfter === realSettingsBefore, `${realSettingsBefore} -> ${realSettingsAfter}`);
-  const ownerChanges = ownerSnapshotDiff(ownerBefore, ownerSnapshot());
+  const { changes: ownerChanges, restamped } = ownerSnapshotDiff(ownerBefore, ownerSnapshot());
   check(
     "owner agent directory entries unchanged",
     ownerChanges.length === 0,
-    ownerChanges.join("; ") || "no added, removed, resized or re-stamped entries",
+    ownerChanges.join("; ") || "no added, removed or resized entries",
   );
+  if (restamped.length) {
+    log(
+      `  owner mtime changes (host CLI lock, no durable effect): ${restamped.join(", ")}; ` +
+        "the `pi` CLI creates and removes its managed-install update.lock on each invocation",
+    );
+  }
+  const leftoverLocks = [join(realAgentDir, "install", "update.lock"), join(realAgentDir, "settings.json.lock")].filter(existsSync);
+  check("no pi lock left behind in the owner agent directory", leftoverLocks.length === 0, leftoverLocks.join(", ") || "none");
 } finally {
   rmSync(work, { recursive: true, force: true });
 }

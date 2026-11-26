@@ -66,13 +66,16 @@ pi remove git:github.com/hatchertechnology/htp-pi
   `baseline-pre-r5-46f6b81a` (commit `46f6b81a90c50a97c5f6c3b73a3eed67a7ee9b39`):
   install the anchor, verify the installed tree, upgrade to the target, roll
   back to the anchor, roll forward, uninstall. Every child process runs with
-  `HOME`/`PI_CODING_AGENT_DIR` inside the disposable root, so the run never
-  writes to the owner's `~/.pi/agent`; it reads and executes only the installed
-  Pi runtime from `~/.pi/agent/install/releases` (read-only) and fails if a
-  top-level entry under the owner's agent directory or `install/` is added,
-  removed, resized or has its mtime changed. It creates no tags and contacts no
-  network (a local bare mirror is reached through a throwaway `insteadOf`
-  mapping).
+  `HOME`/`PI_CODING_AGENT_DIR` inside the disposable root and the run writes no
+  file content to the owner's `~/.pi/agent`; it reads and executes only the
+  installed Pi runtime from `~/.pi/agent/install/releases` (a read-only module
+  load). The `pi` CLI is a managed install and creates and removes its own
+  `<install>/update.lock` on each invocation, which bumps the `install/`
+  directory mtime without leaving an entry, so the rehearsal asserts the durable
+  record — no top-level entry under the owner's agent directory or `install/`
+  added, removed or resized, no lock left behind, `settings.json` byte-identical
+  — and reports mtime changes. It creates no tags and contacts no network (a
+  local bare mirror is reached through a throwaway `insteadOf` mapping).
 
 ### Withdraw / supersede rollback (no owner install)
 
