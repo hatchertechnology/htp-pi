@@ -144,7 +144,13 @@ try {
   check("settings record the anchor pin", settingsPackages().includes(`${SOURCE}@${anchor}`), JSON.stringify(settingsPackages()));
   const anchorHead = spawnSync("git", ["rev-parse", "HEAD"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
   check("checkout HEAD is the anchor", anchorHead === anchor, anchorHead);
-  check("anchor checkout is clean", spawnSync("git", ["status", "--porcelain"], { cwd: checkout, encoding: "utf8" }).stdout.trim() === "");
+  // npm leaves an untracked package-lock.json in the checkout (the dependency
+  // step recreates it after Pi removes the tracked one), so the tree check
+  // verifies tracked files only; the pinned tree must match the commit.
+  const anchorDirty = spawnSync("git", ["status", "--porcelain", "--untracked-files=no"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
+  const anchorUntracked = spawnSync("git", ["status", "--porcelain"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
+  check("anchor checkout tree matches the commit", anchorDirty === "", anchorDirty || "clean");
+  log(`  anchor untracked leftovers: ${anchorUntracked || "none"}`);
   const anchorManifest = JSON.parse(readFileSync(join(checkout, "package.json"), "utf8"));
   check("anchor package version is 1.0.0", anchorManifest.version === "1.0.0", anchorManifest.version);
   check("anchor has no lifecycle-remediation skill", !existsSync(join(checkout, "skills", "lifecycle-remediation")));
@@ -157,7 +163,10 @@ try {
   check("settings record the target pin", settingsPackages().includes(`${SOURCE}@${target}`), JSON.stringify(settingsPackages()));
   const targetHead = spawnSync("git", ["rev-parse", "HEAD"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
   check("checkout HEAD is the target", targetHead === target, targetHead);
-  check("target checkout is clean", spawnSync("git", ["status", "--porcelain"], { cwd: checkout, encoding: "utf8" }).stdout.trim() === "");
+  const targetDirty = spawnSync("git", ["status", "--porcelain", "--untracked-files=no"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
+  const targetUntracked = spawnSync("git", ["status", "--porcelain"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
+  check("target checkout tree matches the commit", targetDirty === "", targetDirty || "clean");
+  log(`  target untracked leftovers: ${targetUntracked || "none"}`);
   const targetManifest = JSON.parse(readFileSync(join(checkout, "package.json"), "utf8"));
   check("target package version is 1.1.0", targetManifest.version === "1.1.0", targetManifest.version);
   check("target ships the lifecycle-remediation skill", existsSync(join(checkout, "skills", "lifecycle-remediation", "SKILL.md")));
@@ -189,7 +198,10 @@ try {
   check("settings record the anchor pin again", settingsPackages().includes(`${SOURCE}@${anchor}`), JSON.stringify(settingsPackages()));
   const rollbackHead = spawnSync("git", ["rev-parse", "HEAD"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
   check("rollback checkout HEAD is the anchor", rollbackHead === anchor, rollbackHead);
-  check("rollback checkout is clean", spawnSync("git", ["status", "--porcelain"], { cwd: checkout, encoding: "utf8" }).stdout.trim() === "");
+  const rollbackDirty = spawnSync("git", ["status", "--porcelain", "--untracked-files=no"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
+  const rollbackUntracked = spawnSync("git", ["status", "--porcelain"], { cwd: checkout, encoding: "utf8" }).stdout.trim();
+  check("rollback checkout tree matches the commit", rollbackDirty === "", rollbackDirty || "clean");
+  log(`  rollback untracked leftovers: ${rollbackUntracked || "none"}`);
   const rollbackManifest = JSON.parse(readFileSync(join(checkout, "package.json"), "utf8"));
   check("rollback package version is 1.0.0", rollbackManifest.version === "1.0.0", rollbackManifest.version);
   check("rollback removed the lifecycle-remediation skill", !existsSync(join(checkout, "skills", "lifecycle-remediation")));
