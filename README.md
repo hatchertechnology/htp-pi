@@ -18,8 +18,29 @@ pi update --extensions
 pi remove git:github.com/hatchertechnology/htp-pi
 ```
 
-Tested against Pi 1.6.0. See [`docs/package.md`](docs/package.md) for
+Tested against Pi 1.6.1. See [`docs/package.md`](docs/package.md) for
 distribution, upgrade/rollback, configuration and skill synchronization.
+
+## Rollback
+
+There is no owner install of this package to revert, so the R5 rollback is a
+**withdraw / supersede**, not an in-place downgrade (full text:
+[`docs/package.md`](docs/package.md#withdraw--supersede-rollback-no-owner-install)):
+
+1. **Withdraw the release** — delete the release tag, or repoint the documented
+   pin, so no new install resolves it.
+2. **Mark the release superseded** — record the replacement commit in the
+   release notes; a pinned full commit stays resolvable, so an installed
+   checkout keeps working until its owner updates it.
+3. **The anchor stays the reference** — `baseline-pre-r5-46f6b81a` (commit
+   `46f6b81a90c50a97c5f6c3b73a3eed67a7ee9b39`, package `1.0.0`) is the last good
+   reference. Anyone can return to it with
+   `pi install git:github.com/hatchertechnology/htp-pi@<full-40-hex-sha>`.
+
+This branch creates **no tag**: `baseline-pre-r5-46f6b81a` and the `v1.1.0`
+release tag are R5 steps on the merged commit. The withdraw/supersede path is
+rehearsed (install anchor, upgrade, roll back to the anchor, uninstall) by
+`node scripts/rehearse-release-pi.mjs --target <full-40-hex-sha>`.
 
 ## What ships
 
@@ -104,6 +125,20 @@ The additive audit read 1.3.0 tree is vendored separately under
 `availability:producer_unavailable` while the H15 producer gates are disabled,
 never an empty success. `node scripts/check-audit-read-readiness.mjs` is offline
 readiness only; no installed skill, host auth, backend or producer is exercised.
+
+The additive parity-read profile 1.4.0 is vendored separately under
+`contract/parity-reads-1.4/` and pinned to HTP main
+`09a0ba56c175e3e889bfa5a8eacff01666851e39` (tree
+`97ca939759757c7007f2babbccc4da51e4ee6b53`). It adds the host-specific
+capability-gated `lifecycle-remediation` skill for the three owner-scoped reads
+(`website_audit_lifecycle`, `website_url_lifecycle`, `website_remediation_list`),
+the six audit-event availability codes, and the web-only search/comparison reads
+that stay gated. Every read is gated by discovery and its own rollout flag:
+absence from `tools/list` is `unsupported`, a discovered read behind a held flag
+answers `code: unavailable` (status 503) — never an empty history, an empty work
+queue or a zero count. `node scripts/check-parity-read-readiness.mjs` is offline
+readiness only; no installed skill, host auth, backend or rollout flag is
+exercised.
 
 ## License
 

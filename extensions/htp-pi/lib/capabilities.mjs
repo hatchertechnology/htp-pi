@@ -14,7 +14,7 @@
 // A skill mentioning an operation never makes it available. Backend-gated work
 // stays gated here and in contract/wave1/operations.json.
 
-export const PACKAGE_VERSION = "1.0.0";
+export const PACKAGE_VERSION = "1.1.0";
 
 // HTP MCP tools are provided by Pi's built-in MCP support once the extension
 // registers the `htp` server. They are "supported" as a host binding: the
@@ -69,6 +69,31 @@ export const GATED_OPERATIONS = [
     id: "htp.website_operational_episodes",
     reason:
       "Additive audit read 1.3.0. H15 audit producer gates are disabled and the deployed 23-tool host does not expose it. Discover at tools/list; absence is unsupported, and a discovered read returns availability:producer_unavailable, never an empty success or zero count.",
+  },
+  {
+    id: "htp.website_audit_lifecycle",
+    reason:
+      "Additive parity read 1.4.0 (binding website_audit_lifecycle). Discovered per session at tools/list; each read is held by its own rollout flag (HTP_ROLLOUT_LIFECYCLE). Absence is unsupported, never an empty history; a discovered read answers code:unavailable (status 503) while the flag is off — never an empty success or zero count.",
+  },
+  {
+    id: "htp.website_url_lifecycle",
+    reason:
+      "Additive parity read 1.4.0 (binding website_url_lifecycle). Discovered per session at tools/list; held by HTP_ROLLOUT_LIFECYCLE. Absence is unsupported, never an empty history; a discovered read answers code:unavailable (status 503) while the flag is off — never an empty success or zero count.",
+  },
+  {
+    id: "htp.website_remediation_list",
+    reason:
+      "Additive parity read 1.4.0 (binding website_remediation_list). Discovered per session at tools/list; held by HTP_ROLLOUT_REMEDIATION. Absence is unsupported, never an empty work queue; a discovered read answers code:unavailable (status 503) while the flag is off — never an empty success or zero count. Saving work and recording attempts stay web-only.",
+  },
+  {
+    id: "htp.search_evidence",
+    reason:
+      "Search evidence reads (search dataset and crawl evidence) are served by the HTP web dashboard and REST API, not by the deployed MCP host. No MCP tool exists; a tools/list absence is unsupported, never an empty page. Web rollout flags (rolloutSearchEvidence) and the search_crawl_evidence grant stay independently gated.",
+  },
+  {
+    id: "htp.independent_comparison",
+    reason:
+      "Independent-audit comparison reads (import/history/save/detail/fingerprint/delete) are web-dashboard and REST-only; no MCP tool exists on the deployed host. A tools/list absence is unsupported, never an empty page. The comparison pilot approval and rollout flags stay independently gated.",
   },
   {
     id: "seosmith.cli.crawl",

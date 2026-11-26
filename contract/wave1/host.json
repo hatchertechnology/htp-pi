@@ -1,7 +1,7 @@
 {
   "host": "pi",
   "displayName": "Pi",
-  "observedVersion": "1.6.0",
+  "observedVersion": "1.6.1",
   "minimumVersion": null,
   "packageStatus": "implemented",
   "transports": [
@@ -38,9 +38,9 @@
     "https://github.com/hatchertechnology/htp-pi"
   ],
   "provenance": {
-    "cliVersion": "1.6.0",
+    "cliVersion": "1.6.1",
     "package": "@earendil-works/pi-coding-agent",
-    "packageVersion": "1.6.0",
+    "packageVersion": "1.6.1",
     "docsUsed": [
       "extensions.md",
       "packages.md",
@@ -61,11 +61,14 @@
     "seo-review",
     "website-management",
     "repository-settings",
-    "seosmith-operations"
+    "seosmith-operations",
+    "lifecycle-remediation"
   ],
   "gates": [
     "HTP Business Profile writes require the HTP feature flag.",
     "Durable provider requests (contract 1.1.0) require deployed backend support and tool schema verification.",
+    "Additive parity reads 1.4.0 (website_audit_lifecycle, website_url_lifecycle, website_remediation_list) stay gated by tool discovery and the HTP_ROLLOUT_LIFECYCLE / HTP_ROLLOUT_REMEDIATION flags; an unavailable (503) read is held, never an empty page.",
+    "Search evidence and independent-audit comparison reads are web-dashboard and REST-only; no MCP tool exists, so a tools/list absence is unsupported and these reads are never fetched outside the web dashboard.",
     "Direct SEOsmith private-worker HTTP access requires explicit operator configuration.",
     "SEOsmith staging profiles (S13) and baseline CI (S16) have not shipped.",
     "Live HTP OAuth sign-in and a live crawl with a real SEOsmith build are release verification steps, not satisfied by fixture tests alone."

@@ -41,6 +41,18 @@ const hostModule = await resolveHostModule();
 const sdk = await import(pathToFileURL(hostModule).href);
 const { DefaultResourceLoader, SessionManager, createAgentSession } = sdk;
 
+// The recorded host must be the host that actually ran. observedVersion in
+// contract/wave1/host.json is the release's tested-host record; the smoke is the
+// only step that executes the real installed runtime, so it is where a host
+// upgrade is caught. Re-verify the release and bump the record deliberately.
+const hostPkgVersion = JSON.parse(readFileSync(join(dirname(hostModule), "..", "package.json"), "utf8")).version;
+const declaredHostVersion = JSON.parse(readFileSync(join(root, "contract", "wave1", "host.json"), "utf8")).observedVersion;
+record(
+  "installed host matches contract/wave1/host.json observedVersion",
+  hostPkgVersion === declaredHostVersion,
+  `runtime ${hostPkgVersion} vs recorded ${declaredHostVersion}`,
+);
+
 const work = mkdtempSync(join(tmpdir(), "htp-pi-smoke-"));
 const fakeBinary = join(work, "fake-seosmith.mjs");
 const { copyFileSync } = await import("node:fs");

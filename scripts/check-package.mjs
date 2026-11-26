@@ -118,6 +118,39 @@ for (const key of ["host", "displayName", "observedVersion", "packageStatus", "t
   if (!(key in wave1Host)) fail(`contract/wave1/host.json: missing "${key}"`);
 }
 if (wave1Host.host !== "pi") fail('contract/wave1/host.json: host must be "pi"');
+
+// ---------- tested host version ----------
+// `observedVersion` is the Pi build this release was verified against. It is
+// pinned here so a host change forces an explicit record update, and the
+// published docs must state the same build: this record is what the next
+// reviewer and the release coordinator rely on. The real-host smoke ties the
+// same value to the runtime that actually executed (`scripts/host-smoke.mjs`).
+const TESTED_PI_VERSION = "1.6.1";
+if (wave1Host.observedVersion !== TESTED_PI_VERSION) {
+  fail(
+    `contract/wave1/host.json: observedVersion ${JSON.stringify(wave1Host.observedVersion)} ` +
+      `must be the tested host ${TESTED_PI_VERSION}`,
+  );
+}
+for (const key of ["cliVersion", "packageVersion"]) {
+  const recorded = wave1Host.provenance?.[key];
+  if (recorded !== TESTED_PI_VERSION) {
+    fail(`contract/wave1/host.json: provenance.${key} ${JSON.stringify(recorded)} must be the tested host ${TESTED_PI_VERSION}`);
+  }
+}
+for (const rel of ["README.md", "docs/package.md", "docs/pi-host-compatibility.md"]) {
+  if (!existsSync(join(root, rel))) continue;
+  const text = readFileSync(join(root, rel), "utf8");
+  if (!text.includes(`Pi ${TESTED_PI_VERSION}`)) {
+    fail(`${rel}: must state the tested host "Pi ${TESTED_PI_VERSION}"`);
+  }
+  // These two docs carry no historical host record, so a stale version is a
+  // plain contradiction. docs/pi-host-compatibility.md keeps its dated Wave 0/
+  // Wave 1 history and is checked for presence only.
+  if (rel !== "docs/pi-host-compatibility.md" && /Pi 1\.6\.0/.test(text)) {
+    fail(`${rel}: stale tested-host version (Pi 1.6.0) contradicts the recorded ${TESTED_PI_VERSION}`);
+  }
+}
 if (!["not-implemented", "fixture-defined", "implemented"].includes(wave1Host.packageStatus)) {
   fail("contract/wave1/host.json: invalid packageStatus");
 }
