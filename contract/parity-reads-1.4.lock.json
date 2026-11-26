@@ -1,0 +1,27 @@
+{
+  "contractVersion": "1.4.0",
+  "canonicalCommit": "09a0ba56c175e3e889bfa5a8eacff01666851e39",
+  "sourcePRs": [
+    151
+  ],
+  "canonicalTree": "97ca939759757c7007f2babbccc4da51e4ee6b53",
+  "revisionStatus": "merged",
+  "sharedSkillSource": "unchanged: pinned by contract/audit-reads-1.3.lock.json (profile 1.4 adds no shared skill text)",
+  "activationGates": [
+    "exact-head contract review and canonical merge",
+    "API deployment with the lifecycle and remediation rollout flags and the database grants enabled independently",
+    "three host source/readiness companions at exact canonical merge; runtime support separately verified",
+    "fresh tools/list and input-schema discovery on the deployed host"
+  ],
+  "files": {
+    "docs/plugin-contract/v1.4/README.md": "06ee34c34eb51a72a4c07f8a109b33b68f0612881f8e612c6e6617350143317c",
+    "docs/plugin-contract/v1.4/audit-read-availability.json": "2e25cd881cc61011f765744d19c9ddfcda44f6f406b3da43769b3fb145441d58",
+    "docs/plugin-contract/v1.4/conformance.json": "d388be0c6cbbae486bf328d9595ceb983343c82f9760e6b896bb046ee928907e",
+    "docs/plugin-contract/v1.4/parity-reads.json": "665bec3fb20f9e07754c5dc35d96166446b8b633c5fad8b652b1781ed1005b60",
+    "scripts/audit-read-availability.mjs": "1ba490fe02bcb3fefc02dfe1871d3a5df4adfb57d97bfd90f074d1144e70df6f",
+    "scripts/check-parity-read-contract.mjs": "c71241a6d387757279009c72f3d3e68b0e8edac0ae1bc284fc709524dcd43b9d",
+    "scripts/parity-read-contract.mjs": "4ab9d296b163d0ab51fd716b4df3d8da1e859883e5060601a12304d47c436710",
+    "scripts/plugin-contract.mjs": "cad9798593f413961781b2188590c7f57cf785926b84d143daf173068eda4d08"
+  },
+  "canonicalRevision": "HTP main 09a0ba56c175e3e889bfa5a8eacff01666851e39 (tree 97ca939759757c7007f2babbccc4da51e4ee6b53). The 1.4.0 contract files arrived with PR #151 (w1c/parity, merge 255804d); PR #152 leaves them byte-identical. Contract files live at docs/plugin-contract/v1.4/."
+}

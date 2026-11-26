@@ -3,7 +3,7 @@
   "host": "pi",
   "wave": 1,
   "package": "htp-pi",
-  "packageVersion": "1.0.0",
+  "packageVersion": "1.1.0",
   "source": "contract/v1/operations.json (canonical field copy) + extensions/htp-pi/lib/capabilities.mjs",
   "notes": "Wave 1 resolves the Wave 0 all-gated projection only for operations this package actually binds. HTP MCP tools are host-supported through the registered `htp` MCP server (adapter mcp-passthrough); the five SEOsmith lifecycle operations are host-supported through the local operations CLI (adapter local-cli). Feature-flagged and backend-gated work stays gated. A skill never makes an operation available.",
   "operations": [

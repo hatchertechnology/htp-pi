@@ -105,6 +105,20 @@ The additive audit read 1.3.0 tree is vendored separately under
 never an empty success. `node scripts/check-audit-read-readiness.mjs` is offline
 readiness only; no installed skill, host auth, backend or producer is exercised.
 
+The additive parity-read profile 1.4.0 is vendored separately under
+`contract/parity-reads-1.4/` and pinned to HTP main
+`09a0ba56c175e3e889bfa5a8eacff01666851e39` (tree
+`97ca939759757c7007f2babbccc4da51e4ee6b53`). It adds the host-specific
+capability-gated `lifecycle-remediation` skill for the three owner-scoped reads
+(`website_audit_lifecycle`, `website_url_lifecycle`, `website_remediation_list`),
+the six audit-event availability codes, and the web-only search/comparison reads
+that stay gated. Every read is gated by discovery and its own rollout flag:
+absence from `tools/list` is `unsupported`, a discovered read behind a held flag
+answers `code: unavailable` (status 503) — never an empty history, an empty work
+queue or a zero count. `node scripts/check-parity-read-readiness.mjs` is offline
+readiness only; no installed skill, host auth, backend or rollout flag is
+exercised.
+
 ## License
 
 MIT

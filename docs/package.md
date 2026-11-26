@@ -1,9 +1,11 @@
 # htp-pi package: install, upgrade, gates and skill sync
 
 This package turns `htp-pi` into an installable Pi package. It adds one
-extension (`extensions/htp-pi/index.ts`) and five skills (`skills/`). The
-historical Wave 0 contract files under `contract/v1` remain pinned evidence; the
-Wave 1 binding state lives in `contract/wave1/`.
+extension (`extensions/htp-pi/index.ts`) and six skills (`skills/`, including the
+host-specific `lifecycle-remediation`). The historical Wave 0 contract files
+under `contract/v1` remain pinned evidence; the Wave 1 binding state lives in
+`contract/wave1/`, and the additive parity-read profile 1.4.0 is vendored under
+`contract/parity-reads-1.4/`.
 
 ## Supported host version
 
@@ -59,6 +61,35 @@ pi remove git:github.com/hatchertechnology/htp-pi
 - `node scripts/check-install-lifecycle.mjs` runs install/list/update/remove
   against the real CLI in an isolated `PI_CODING_AGENT_DIR`; it never touches
   the user's settings.
+- `node scripts/rehearse-release-pi.mjs --target <full-40-hex-sha>` rehearses
+  the release lifecycle in a disposable home from the Wave 1 R5 anchor
+  `baseline-pre-r5-46f6b81a` (commit `46f6b81a90c50a97c5f6c3b73a3eed67a7ee9b39`):
+  install the anchor, verify the installed tree, upgrade to the target, roll
+  back to the anchor, roll forward, uninstall. It never touches the owner's
+  `~/.pi/agent`, creates no tags, and contacts no network (a local bare mirror
+  is reached through a throwaway `insteadOf` mapping).
+
+### Withdraw / supersede rollback (no owner install)
+
+There is no owner install of this package in `~/.pi/agent/settings.json`
+(`packages` holds unrelated sources). The Wave 1 R5 rollback for this host is
+therefore **not** an installed-package revert:
+
+1. **Withdraw the release** — if the release tag must not resolve, delete the
+   release tag on the remote (R5 step) or repoint the documented pin. Anyone who
+   installed by the tag's source can no longer resolve it and keeps the last
+   working checkout.
+2. **Mark the release superseded** — record the replacement commit in the
+   release notes; a pinned full commit stays resolvable, so an installed
+   checkout keeps working until the owner updates it.
+3. **Anchor stays the reference** — `baseline-pre-r5-46f6b81a` (commit
+   `46f6b81a90c50a97c5f6c3b73a3eed67a7ee9b39`) remains the last good reference
+   commit of the `1.0.0` package. Anyone who installed a pinned commit can
+   return to it with the documented
+   `pi install git:github.com/hatchertechnology/htp-pi@<full-40-hex-sha>`.
+
+No install exists to revert in place, so the rehearsal above is the only
+behavioral evidence of the rollback path.
 
 ## What the package binds
 
@@ -112,6 +143,13 @@ backend/verification gates (a complementary runtime view):
 
 - HTP Business Profile writes (feature flag).
 - Durable provider requests, contract 1.1.0 (deployed backend + schema).
+- Audit events and episodes (contract 1.3.0) and the parity reads 1.4.0
+  (`website_audit_lifecycle`, `website_url_lifecycle`, `website_remediation_list`):
+  gated by tool discovery and their own rollout flags; absence is `unsupported`,
+  a held read is `unavailable` (503), never an empty history or work queue.
+- Search evidence and independent-audit comparison reads: served by the web
+  dashboard and REST API, not MCP tools on the deployed host; never fetched
+  outside the web workflow.
 - Direct SEOsmith private-worker HTTP (explicit operator configuration).
 - SEOsmith staging profiles (S13) and baseline CI (S16).
 - Live HTP OAuth sign-in remains a release verification step (needs the
@@ -128,7 +166,8 @@ backend/verification gates (a complementary runtime view):
 Skills live in `skills/` and are listed in `contract/wave1/host.json`. The
 canonical HTP skills are consumed from HTP #34 / the audit export 1.2 tree and
 carry a Pi host-adaptation note (`mcp__htp__` names, codemode exposure, the
-connection tool). `seosmith-operations` and `htp-connection` are host-specific.
+connection tool). `seosmith-operations`, `htp-connection` and
+`lifecycle-remediation` (profile 1.4.0) are host-specific.
 
 To update skills:
 

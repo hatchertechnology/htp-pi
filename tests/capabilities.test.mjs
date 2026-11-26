@@ -61,6 +61,33 @@ test("GATED_OPERATIONS covers the canonical gated operations too", () => {
   }
 });
 
+test("parity read 1.4.0 reads stay gated and never advertised as available", () => {
+  const gated = GATED_OPERATIONS.find((g) => g.id === "htp.website_audit_lifecycle");
+  assert.ok(gated, "website_audit_lifecycle must stay gated");
+  assert.match(gated.reason, /HTP_ROLLOUT_/);
+  assert.match(gated.reason, /unavailable/);
+  const remediation = GATED_OPERATIONS.find((g) => g.id === "htp.website_remediation_list");
+  assert.ok(remediation, "website_remediation_list must stay gated");
+  assert.match(remediation.reason, /HTP_ROLLOUT_REMEDIATION/);
+  const url = GATED_OPERATIONS.find((g) => g.id === "htp.website_url_lifecycle");
+  assert.ok(url, "website_url_lifecycle must stay gated");
+  for (const id of ["htp.website_audit_lifecycle", "htp.website_url_lifecycle", "htp.website_remediation_list"]) {
+    assert.ok(!HTP_MCP_OPERATIONS.includes(id), `${id} must not be advertised as an MCP operation`);
+  }
+});
+
+test("web-only search and comparison reads stay gated and never advertised as MCP tools", () => {
+  const search = GATED_OPERATIONS.find((g) => g.id === "htp.search_evidence");
+  assert.ok(search, "search evidence reads must stay gated");
+  assert.match(search.reason, /REST|web/);
+  const comparisons = GATED_OPERATIONS.find((g) => g.id === "htp.independent_comparison");
+  assert.ok(comparisons, "independent comparison reads must stay gated");
+  assert.match(comparisons.reason, /REST|web/);
+  for (const id of ["htp.search_evidence", "htp.independent_comparison"]) {
+    assert.ok(!HTP_MCP_OPERATIONS.includes(id), `${id} must not be advertised as an MCP operation`);
+  }
+});
+
 test("additive audit reads stay gated and never advertised as available", () => {
   const gated = GATED_OPERATIONS.find((g) => g.id === "htp.website_audit_events");
   assert.ok(gated, "website_audit_events must stay gated");

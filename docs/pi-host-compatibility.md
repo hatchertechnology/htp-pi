@@ -17,7 +17,9 @@ Tested host: **Pi 1.6.0** (`pi --version`). The installable package adds:
   `seosmith_capabilities`, `seosmith_start`, `seosmith_status`,
   `seosmith_cancel`, `seosmith_report`, `seosmith_export`.
 - HTP status tools: `htp_connection_status`, `htp_pi_capabilities`.
-- Five skills under `skills/`, listed in `contract/wave1/host.json`.
+- Six skills under `skills/`, listed in `contract/wave1/host.json` (the
+  host-specific `lifecycle-remediation` skill covers the additive parity-read
+  profile 1.4.0, vendored under `contract/parity-reads-1.4/`).
 
 Real-host verification (`node scripts/host-smoke.mjs`) loads the extension with
 the installed Pi runtime and invokes every advertised SEOsmith operation through
